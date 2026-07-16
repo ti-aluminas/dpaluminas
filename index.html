@@ -1,0 +1,1378 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Aluminas · Sistema de Admissão</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap');
+
+  :root {
+    --gold: #B08D57;
+    --gold-dark: #8C6E3E;
+    --gold-deep: #6E5530;
+    --gold-light: #E8D9BE;
+    --gold-wash: #FBF6EC;
+    --ink: #211D18;
+    --ink-soft: #6B6255;
+    --ink-faint: #9A927F;
+    --paper: #F7F4EF;
+    --card: #FFFFFF;
+    --line: #E6DFD1;
+    --ok: #3F6B4A;
+    --ok-bg: #E4EEE5;
+    --warn: #B5792B;
+    --warn-bg: #F5E9D6;
+    --info: #4A6B8A;
+    --info-bg: #E2EBF1;
+    --violet: #6C5B8C;
+    --violet-bg: #EBE7F2;
+    --danger: #A6402B;
+    --danger-bg: #F3E0D8;
+    --shadow: 0 1px 2px rgba(33,29,24,0.04), 0 8px 24px -12px rgba(33,29,24,0.12);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection { background: var(--gold-light); }
+
+  .app { min-height: 100vh; display: flex; flex-direction: column; }
+
+  /* ---------- Top bar ---------- */
+  .topbar {
+    background: var(--ink);
+    color: var(--gold-light);
+    border-bottom: 3px solid var(--gold);
+    padding: 14px 22px;
+    display: flex; align-items: center; justify-content: space-between; gap: 14px;
+    flex-wrap: wrap;
+  }
+  .topbar-brand { display: flex; align-items: baseline; gap: 10px; }
+  .topbar-brand .mark {
+    font-family: 'Fraunces', serif; font-weight: 600; font-size: 19px; letter-spacing: 0.02em;
+    color: #fff;
+  }
+  .topbar-brand .mark b { color: var(--gold); font-weight: 700; }
+  .topbar-brand .sub {
+    font-family: 'JetBrains Mono', monospace; font-size: 10.5px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--ink-faint);
+  }
+  .topbar-right { display: flex; align-items: center; gap: 12px; }
+  .role-badge {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+    background: rgba(176,141,87,0.16); color: var(--gold-light);
+    border: 1px solid rgba(176,141,87,0.4);
+    padding: 6px 12px; border-radius: 20px;
+  }
+  .btn-exit {
+    font-family: 'Inter', sans-serif; font-size: 12.5px; font-weight: 600;
+    background: transparent; border: 1px solid rgba(232,217,190,0.35); color: var(--gold-light);
+    padding: 7px 14px; border-radius: 20px; cursor: pointer;
+  }
+  .btn-exit:hover { background: rgba(232,217,190,0.1); }
+
+  /* ---------- Layout containers ---------- */
+  .main { flex: 1; padding: 32px 20px 80px; }
+  .container { max-width: 1080px; margin: 0 auto; }
+  .container.narrow { max-width: 760px; }
+
+  /* ---------- Home ---------- */
+  .home-hero { text-align: center; margin: 18px 0 40px; }
+  .home-hero .eyebrow {
+    font-family: 'JetBrains Mono', monospace; font-size: 11.5px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--gold-dark); font-weight: 600;
+  }
+  .home-hero h1 {
+    font-family: 'Fraunces', serif; font-weight: 600; font-size: 34px; margin: 8px 0 10px; color: var(--ink);
+  }
+  .home-hero p { color: var(--ink-soft); font-size: 14.5px; max-width: 480px; margin: 0 auto; line-height: 1.6; }
+
+  .role-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-bottom: 44px; }
+  @media (max-width: 760px) { .role-grid { grid-template-columns: 1fr; } }
+
+  .role-card {
+    background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--gold);
+    border-radius: 10px; padding: 24px 22px; cursor: pointer; box-shadow: var(--shadow);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    text-align: left; position: relative; overflow: hidden;
+  }
+  .role-card:hover { transform: translateY(-3px); box-shadow: 0 4px 8px rgba(33,29,24,0.06), 0 16px 32px -14px rgba(33,29,24,0.18); }
+  .role-card .rc-step {
+    font-family: 'JetBrains Mono', monospace; font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--gold-dark); font-weight: 700; margin-bottom: 10px; display: block;
+  }
+  .role-card h3 { font-family: 'Fraunces', serif; font-size: 20px; margin: 0 0 8px; color: var(--ink); }
+  .role-card p { font-size: 13px; color: var(--ink-soft); line-height: 1.55; margin: 0; }
+  .role-card .rc-arrow {
+    position: absolute; right: 20px; bottom: 20px; font-size: 18px; color: var(--gold);
+    transition: transform 0.15s ease;
+  }
+  .role-card:hover .rc-arrow { transform: translateX(4px); }
+
+  /* Overview status board (public, no dados sensíveis) */
+  .overview-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    padding: 22px; box-shadow: var(--shadow);
+  }
+  .overview-card h2 {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--ink-soft); margin: 0 0 4px;
+  }
+  .overview-card .ov-sub { font-size: 12.5px; color: var(--ink-faint); margin-bottom: 18px; }
+
+  .tracker-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 14px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper);
+    margin-bottom: 10px;
+  }
+  .tracker-name { font-weight: 700; font-size: 14px; }
+  .tracker-meta { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: var(--ink-faint); margin-top: 2px; }
+
+  .stepper { display: flex; align-items: center; gap: 4px; }
+  .step-dot {
+    width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; flex-shrink: 0;
+    background: var(--line); color: var(--ink-faint); border: 2px solid var(--line);
+  }
+  .step-dot.done { background: var(--gold); color: #fff; border-color: var(--gold-dark); }
+  .step-dot.current { background: #fff; color: var(--gold-dark); border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold-light); }
+  .step-line { width: 22px; height: 2px; background: var(--line); }
+  .step-line.done { background: var(--gold); }
+
+  .empty-state {
+    text-align: center; padding: 30px 10px; color: var(--ink-faint); font-size: 13.5px; font-style: italic;
+  }
+
+  /* ---------- Pin modal ---------- */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(33,29,24,0.55); backdrop-filter: blur(2px);
+    display: flex; align-items: center; justify-content: center; z-index: 100; padding: 20px;
+  }
+  .modal-box {
+    background: var(--card); border-radius: 12px; border-top: 4px solid var(--gold);
+    padding: 26px 26px 24px; width: 100%; max-width: 340px; box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  }
+  .modal-box h3 { font-family: 'Fraunces', serif; font-size: 19px; margin: 0 0 4px; }
+  .modal-box .ms { font-size: 12.5px; color: var(--ink-soft); margin-bottom: 16px; }
+  .modal-box input {
+    width: 100%; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.3em; text-align: center; font-size: 18px;
+    padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink);
+  }
+  .modal-box input:focus { outline: 2px solid var(--gold); outline-offset: 1px; }
+  .modal-actions { display: flex; gap: 10px; margin-top: 16px; }
+  .modal-err { color: var(--danger); font-size: 12px; margin-top: 8px; display: none; }
+  .modal-err.show { display: block; }
+
+  /* ---------- Buttons ---------- */
+  .btn {
+    font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+    border: none; border-radius: 8px; padding: 11px 18px; cursor: pointer;
+    transition: transform 0.08s ease, background 0.15s ease; display: inline-flex; align-items: center; gap: 7px;
+  }
+  .btn:active { transform: translateY(1px); }
+  .btn-primary { background: var(--gold); color: #fff; }
+  .btn-primary:hover { background: var(--gold-dark); }
+  .btn-ghost { background: transparent; border: 1px solid var(--line); color: var(--ink); }
+  .btn-ghost:hover { background: var(--gold-wash); border-color: var(--gold-light); }
+  .btn-dark { background: var(--ink); color: var(--gold-light); }
+  .btn-dark:hover { background: #33291d; }
+  .btn-block { width: 100%; justify-content: center; }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .btn-sm { padding: 7px 12px; font-size: 12px; }
+
+  /* ---------- Section header inside role views ---------- */
+  .view-header {
+    display: flex; justify-content: space-between; align-items: flex-end; gap: 14px; flex-wrap: wrap;
+    margin-bottom: 22px; border-bottom: 2px solid var(--line); padding-bottom: 16px;
+  }
+  .view-header h1 { font-family: 'Fraunces', serif; font-size: 26px; margin: 0 0 6px; }
+  .view-header .vh-sub { font-size: 13px; color: var(--ink-soft); max-width: 480px; line-height: 1.5; }
+  .view-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+  .vtab {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase;
+    font-weight: 600; padding: 8px 14px; border-radius: 20px; border: 1px solid var(--line); background: var(--card);
+    color: var(--ink-soft); cursor: pointer;
+  }
+  .vtab.active { background: var(--ink); color: var(--gold-light); border-color: var(--ink); }
+  .vtab .cnt { opacity: 0.7; margin-left: 4px; }
+
+  /* ---------- Cards / forms ---------- */
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    padding: 22px; box-shadow: var(--shadow); margin-bottom: 18px;
+  }
+  .card.locked { opacity: 0.72; }
+  .section-num { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .section-num .n {
+    font-family: 'Fraunces', serif; font-weight: 700; font-size: 14px; color: #fff;
+    background: var(--gold); width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .section-num h2 {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--ink-soft); margin: 0;
+  }
+  .section-num .tag {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 3px 9px; border-radius: 10px; margin-left: auto; font-weight: 700;
+  }
+  .tag-sensivel { background: var(--danger-bg); color: var(--danger); }
+  .tag-basico { background: var(--info-bg); color: var(--info); }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
+  .grid.cols3 { grid-template-columns: 1fr 1fr 1fr; }
+  @media (max-width: 600px) { .grid, .grid.cols3 { grid-template-columns: 1fr; } }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field.span2 { grid-column: span 2; }
+  @media (max-width: 600px) { .field.span2 { grid-column: span 1; } }
+  .field label { font-size: 12px; font-weight: 600; color: var(--ink-soft); }
+  .field label .req { color: var(--danger); }
+  .field input, .field select, .field textarea {
+    font-family: 'Inter', sans-serif; font-size: 14px;
+    padding: 9px 11px; border: 1px solid var(--line); border-radius: 7px;
+    background: var(--paper); color: var(--ink);
+  }
+  .field textarea { resize: vertical; min-height: 64px; font-family: 'Inter', sans-serif; }
+  .field input:focus, .field select:focus, .field textarea:focus { outline: 2px solid var(--gold); outline-offset: 1px; }
+  .field input.invalid, .field select.invalid { border-color: var(--danger); background: var(--danger-bg); }
+  .field input:disabled, .field select:disabled, .field input:read-only { background: #F1EDE4; color: var(--ink-soft); }
+
+  .checks { display: flex; flex-direction: column; gap: 8px; }
+  .check-row { display: flex; align-items: center; gap: 9px; font-size: 13px; padding: 6px 8px; border-radius: 6px; cursor: pointer; }
+  .check-row:hover { background: var(--gold-wash); }
+  .check-row input { width: 16px; height: 16px; accent-color: var(--gold); cursor: pointer; }
+
+  .actions { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+
+  .hint { font-size: 12px; color: var(--ink-faint); margin-top: 10px; line-height: 1.5; }
+
+  /* ---------- Status pill ---------- */
+  .status-pill {
+    font-family: 'JetBrains Mono', monospace; font-size: 10.5px; font-weight: 700; letter-spacing: 0.05em;
+    text-transform: uppercase; padding: 5px 11px; border-radius: 20px; white-space: nowrap;
+  }
+  .status-rascunho { background: var(--line); color: var(--ink-soft); }
+  .status-aguardando_dp { background: var(--info-bg); color: var(--info); }
+  .status-aguardando_seguranca { background: var(--warn-bg); color: var(--warn); }
+  .status-aguardando_dp_revisao { background: var(--violet-bg); color: var(--violet); }
+  .status-concluido { background: var(--ok-bg); color: var(--ok); }
+
+  /* ---------- List items ---------- */
+  .rec-list { display: flex; flex-direction: column; gap: 10px; }
+  .rec-item {
+    background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--gold-light);
+    border-radius: 8px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center;
+    gap: 12px; cursor: pointer; transition: border-color 0.15s ease;
+  }
+  .rec-item:hover { border-left-color: var(--gold); }
+  .rec-item-name { font-weight: 700; font-size: 14.5px; }
+  .rec-item-meta { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-faint); margin-top: 3px; }
+  .rec-item-right { display: flex; align-items: center; gap: 12px; }
+
+  /* ---------- Detail view ---------- */
+  .detail-back {
+    background: none; border: none; color: var(--ink-soft); font-size: 13px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px; margin-bottom: 16px; font-weight: 600;
+  }
+  .detail-back:hover { color: var(--gold-dark); }
+  .detail-title-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; flex-wrap: wrap; margin-bottom: 18px; }
+  .detail-title-row h1 { font-family: 'Fraunces', serif; font-size: 25px; margin: 0 0 6px; }
+  .detail-proto { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--ink-faint); }
+
+  .history-list { display: flex; flex-direction: column; gap: 8px; }
+  .history-item { font-size: 12.5px; color: var(--ink-soft); display: flex; gap: 8px; padding: 8px 10px; background: var(--paper); border-radius: 6px; }
+  .history-item .hi-dot { color: var(--gold); flex-shrink: 0; }
+
+  .readonly-row { display: flex; border-bottom: 1px dashed var(--line); padding: 7px 0; font-size: 13px; }
+  .readonly-row .rl { width: 200px; flex-shrink: 0; color: var(--ink-soft); }
+  .readonly-row .rv { font-weight: 600; }
+  @media (max-width: 560px) { .readonly-row { flex-direction: column; gap: 2px; } .readonly-row .rl { width: auto; } }
+
+  .locked-note {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-faint); text-transform: uppercase;
+    letter-spacing: 0.06em; margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+  }
+  .locked-note::before { content: '🔒'; font-size: 12px; }
+
+  /* ---------- Toast ---------- */
+  .toast {
+    position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%);
+    background: var(--ink); color: var(--gold-light);
+    padding: 11px 20px; border-radius: 8px; font-size: 13px; border: 1px solid var(--gold);
+    font-family: 'Inter', sans-serif; font-weight: 500;
+    opacity: 0; pointer-events: none; transition: opacity 0.25s ease, transform 0.25s ease; z-index: 200;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(-4px); }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="topbar">
+    <div class="topbar-brand">
+      <span class="mark">ALUMI<b>NAS</b></span>
+      <span class="sub">Sistema de Admissão</span>
+    </div>
+    <div class="topbar-right">
+      <span class="role-badge hidden" id="roleBadge"></span>
+      <button class="btn-exit hidden" id="btnExit" onclick="fazerLogout()">Sair</button>
+      <button class="btn-exit" id="btnEntrar" onclick="abrirLogin()">Entrar</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="container" id="containerHome">
+      <!-- ============ HOME ============ -->
+      <div id="screenHome">
+        <div class="home-hero">
+          <div class="eyebrow">Fluxo de admissão · RH → DP → Segurança do Trabalho</div>
+          <h1>Onde você trabalha na admissão?</h1>
+          <p>Escolha seu setor para preencher, enviar ou revisar os dados dos funcionários. Cada perfil só acessa o que é permitido para sua etapa.</p>
+        </div>
+
+        <div class="role-grid">
+          <div class="role-card" onclick="abrirLogin()">
+            <span class="rc-step">Etapa 1</span>
+            <h3>RH</h3>
+            <p>Cadastra os dados pessoais do candidato assim que ele chega e envia para o DP dar sequência.</p>
+            <span class="rc-arrow">→</span>
+          </div>
+          <div class="role-card" onclick="abrirLogin()">
+            <span class="rc-step">Etapa 2 e 4</span>
+            <h3>DP</h3>
+            <p>Vê tudo: dados pessoais, contratuais, bancários e da segurança do trabalho. Envia para o técnico e finaliza a admissão.</p>
+            <span class="rc-arrow">→</span>
+          </div>
+          <div class="role-card" onclick="abrirLogin()">
+            <span class="rc-step">Etapa 3</span>
+            <h3>Técnico de Segurança</h3>
+            <p>Vê apenas dados básicos e cargo/empresa. Preenche exame e ASO, depois devolve para o DP.</p>
+            <span class="rc-arrow">→</span>
+          </div>
+        </div>
+
+        <div class="overview-card">
+          <h2>Acesso ao sistema</h2>
+          <div class="ov-sub">Faça login com o e-mail e senha cadastrados pelo DP para ver os dados do seu setor. Nenhum dado é exibido antes do login.</div>
+          <button class="btn btn-primary" onclick="abrirLogin()">Entrar no sistema</button>
+        </div>
+      </div>
+
+      <!-- ============ RH ============ -->
+      <div id="screenRH" class="hidden"></div>
+
+      <!-- ============ DP ============ -->
+      <div id="screenDP" class="hidden"></div>
+
+      <!-- ============ SEGURANÇA ============ -->
+      <div id="screenSeguranca" class="hidden"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+(function(){
+  // ============================================================
+  // CONFIG — cole aqui os dados do SEU projeto Supabase
+  // ============================================================
+  const SUPABASE_URL = 'COLE_AQUI_A_URL_DO_SEU_PROJETO';
+  const SUPABASE_ANON_KEY = 'COLE_AQUI_A_ANON_KEY';
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const ROLE_LABEL = { rh: 'RH', dp: 'DP', seguranca: 'Técnico de Segurança' };
+
+  const STATUS = {
+    RASCUNHO: 'rascunho',
+    AGUARDANDO_DP: 'aguardando_dp',
+    AGUARDANDO_SEGURANCA: 'aguardando_seguranca',
+    AGUARDANDO_DP_REVISAO: 'aguardando_dp_revisao',
+    CONCLUIDO: 'concluido'
+  };
+  const STATUS_LABEL = {
+    rascunho: 'Rascunho (RH)',
+    aguardando_dp: 'Aguardando DP',
+    aguardando_seguranca: 'Aguardando Segurança',
+    aguardando_dp_revisao: 'Aguardando revisão do DP',
+    concluido: 'Concluído'
+  };
+  const STEP_INDEX = { rascunho: 0, aguardando_dp: 1, aguardando_seguranca: 2, aguardando_dp_revisao: 3, concluido: 4 };
+  const STEP_LABELS = ['RH', 'DP', 'SEG', 'DP', 'OK'];
+
+  let currentRole = null;
+  let currentUser = null; // { papel, nome }
+  let records = [];
+
+  // ============================================================
+  // UTIL
+  // ============================================================
+  function esc(s) { return (s || '').toString().replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function uid(prefix) { return prefix + '-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2,5).toUpperCase(); }
+  function fmtDate(d) {
+    if (!d) return '—';
+    const parts = d.split('-');
+    if (parts.length !== 3) return d;
+    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+  }
+  function todayISO() { return new Date().toISOString().slice(0,10); }
+  function nowLabel() { return new Date().toLocaleString('pt-BR'); }
+  function toast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2600);
+  }
+  function val(id) { const el = document.getElementById(id); return el ? el.value.trim() : ''; }
+  function checked(id) { const el = document.getElementById(id); return el ? el.checked : false; }
+
+  function validateRequired(ids) {
+    let missing = [];
+    ids.forEach(([id]) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.classList.remove('invalid');
+      if (!el.value.trim()) { missing.push(id); el.classList.add('invalid'); }
+    });
+    return missing;
+  }
+
+  // ============================================================
+  // SUPABASE — cada papel só chama as funções RPC que pode usar;
+  // quem controla o que cada uma retorna/aceita é o banco.
+  // ============================================================
+  function getRecord(id) { return records.find(r => r.id === id); }
+
+  async function chamarRPC(nome, params) {
+    const { data, error } = await supabase.rpc(nome, params || {});
+    if (error) {
+      console.error(nome, error);
+      toast('Erro: ' + error.message);
+      return { ok: false, data: null };
+    }
+    return { ok: true, data };
+  }
+
+  async function carregarRegistrosDoPapel() {
+    if (currentRole === 'rh') {
+      const r = await chamarRPC('rpc_rh_listar');
+      records = r.ok ? r.data : [];
+    } else if (currentRole === 'dp') {
+      const r = await chamarRPC('rpc_dp_listar');
+      records = r.ok ? r.data : [];
+    } else if (currentRole === 'seguranca') {
+      const r = await chamarRPC('rpc_seguranca_listar');
+      records = r.ok ? r.data : [];
+    }
+  }
+
+  // ============================================================
+  // LOGIN / NAVEGAÇÃO
+  // ============================================================
+  window.abrirLogin = function() {
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.id = 'loginOverlay';
+    overlay.innerHTML = `
+      <div class="modal-box">
+        <h3>Entrar no sistema</h3>
+        <div class="ms">Use o e-mail e senha cadastrados pelo DP para o seu setor.</div>
+        <div class="field" style="margin-bottom:10px;">
+          <input type="email" id="loginEmail" placeholder="seu.email@aluminas.com.br" autofocus style="text-align:left;letter-spacing:normal;font-family:'Inter',sans-serif;font-size:14px;" />
+        </div>
+        <div class="field">
+          <input type="password" id="loginSenha" placeholder="Senha" style="text-align:left;letter-spacing:normal;font-family:'Inter',sans-serif;font-size:14px;" />
+        </div>
+        <div class="modal-err" id="loginErr">E-mail ou senha inválidos.</div>
+        <div class="modal-actions">
+          <button class="btn btn-ghost btn-block" onclick="fecharLogin()">Cancelar</button>
+          <button class="btn btn-primary btn-block" id="btnFazerLogin" onclick="fazerLogin()">Entrar</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    const senha = document.getElementById('loginSenha');
+    senha.addEventListener('keydown', e => { if (e.key === 'Enter') fazerLogin(); });
+    document.getElementById('loginEmail').focus();
+  };
+
+  window.fecharLogin = function() {
+    const ov = document.getElementById('loginOverlay');
+    if (ov) ov.remove();
+  };
+
+  window.fazerLogin = async function() {
+    const email = val('loginEmail');
+    const senha = val('loginSenha');
+    const errEl = document.getElementById('loginErr');
+    errEl.classList.remove('show');
+    if (!email || !senha) { errEl.textContent = 'Preencha e-mail e senha.'; errEl.classList.add('show'); return; }
+
+    const btn = document.getElementById('btnFazerLogin');
+    btn.disabled = true; btn.textContent = 'Entrando...';
+
+    const { error } = await supabase.auth.signInWithPassword({ email, password: senha });
+    if (error) {
+      errEl.textContent = 'E-mail ou senha inválidos.';
+      errEl.classList.add('show');
+      btn.disabled = false; btn.textContent = 'Entrar';
+      return;
+    }
+    fecharLogin();
+    await carregarSessaoAtual();
+  };
+
+  window.fazerLogout = async function() {
+    await supabase.auth.signOut();
+    irParaHome();
+  };
+
+  async function carregarSessaoAtual() {
+    const { data: sessao } = await supabase.auth.getSession();
+    if (!sessao || !sessao.session) { irParaHome(); return; }
+
+    const perfil = await chamarRPC('meu_perfil');
+    const linha = perfil.ok && perfil.data && perfil.data[0];
+    if (!linha || !linha.papel) {
+      toast('Sua conta não tem um perfil configurado. Peça para o DP te cadastrar.');
+      await supabase.auth.signOut();
+      irParaHome();
+      return;
+    }
+    currentUser = { papel: linha.papel, nome: linha.nome };
+    await entrarNoPapel(linha.papel);
+  }
+
+  async function entrarNoPapel(role) {
+    currentRole = role;
+    await carregarRegistrosDoPapel();
+    document.getElementById('screenHome').classList.add('hidden');
+    document.getElementById('roleBadge').textContent = ROLE_LABEL[role] + ' · ' + currentUser.nome;
+    document.getElementById('roleBadge').classList.remove('hidden');
+    document.getElementById('btnExit').classList.remove('hidden');
+    document.getElementById('btnEntrar').classList.add('hidden');
+    ['screenRH','screenDP','screenSeguranca'].forEach(id => document.getElementById(id).classList.add('hidden'));
+    if (role === 'rh') { document.getElementById('screenRH').classList.remove('hidden'); renderRH(); }
+    if (role === 'dp') { document.getElementById('screenDP').classList.remove('hidden'); renderDP(); }
+    if (role === 'seguranca') { document.getElementById('screenSeguranca').classList.remove('hidden'); renderSeguranca(); }
+  }
+
+  function irParaHome() {
+    currentRole = null;
+    currentUser = null;
+    records = [];
+    document.getElementById('roleBadge').classList.add('hidden');
+    document.getElementById('btnExit').classList.add('hidden');
+    document.getElementById('btnEntrar').classList.remove('hidden');
+    ['screenRH','screenDP','screenSeguranca'].forEach(id => document.getElementById(id).classList.add('hidden'));
+    document.getElementById('screenHome').classList.remove('hidden');
+  }
+  window.goHome = irParaHome;
+
+  // ============================================================
+  // STEPPER (visual signature element)
+  // ============================================================
+  function stepperHTML(status) {
+    const idx = STEP_INDEX[status];
+    let html = '<div class="stepper">';
+    STEP_LABELS.forEach((label, i) => {
+      const cls = i < idx ? 'done' : (i === idx ? 'current' : '');
+      html += `<div class="step-dot ${cls}" title="${label}">${i < idx ? '✓' : label}</div>`;
+      if (i < STEP_LABELS.length - 1) html += `<div class="step-line ${i < idx ? 'done' : ''}"></div>`;
+    });
+    html += '</div>';
+    return html;
+  }
+
+  // ============================================================
+  // RH — cria dados pessoais e envia para DP
+  // ============================================================
+  function renderRH(view, recId) {
+    view = view || 'lista';
+    const el = document.getElementById('screenRH');
+
+    if (view === 'form') {
+      const rec = recId ? getRecord(recId) : null;
+      const locked = rec && rec.status !== STATUS.RASCUNHO;
+      el.innerHTML = `
+        <button class="detail-back" onclick="renderRH('lista')">← Voltar para a lista</button>
+        <div class="view-header">
+          <div>
+            <h1>${rec ? 'Ficha de ' + esc(rec.rh.nome) : 'Nova ficha · Dados pessoais'}</h1>
+            <div class="vh-sub">Preencha os dados pessoais do candidato. Depois de enviar para o DP, esses dados ficam bloqueados para edição aqui.</div>
+          </div>
+          ${rec ? `<span class="status-pill status-${rec.status}">${STATUS_LABEL[rec.status]}</span>` : ''}
+        </div>
+
+        ${locked ? '<div class="locked-note">Ficha já enviada — campos bloqueados</div>' : ''}
+
+        <div class="card">
+          <div class="section-num"><div class="n">1</div><h2>Dados pessoais</h2></div>
+          <div class="grid">
+            <div class="field span2">
+              <label>Nome completo <span class="req">*</span></label>
+              <input id="f-nome" type="text" placeholder="Nome civil completo" ${locked ? 'disabled' : ''} />
+            </div>
+            <div class="field">
+              <label>CPF <span class="req">*</span></label>
+              <input id="f-cpf" type="text" placeholder="000.000.000-00" ${locked ? 'disabled' : ''} />
+            </div>
+            <div class="field">
+              <label>RG <span class="req">*</span></label>
+              <input id="f-rg" type="text" placeholder="00.000.000-0" ${locked ? 'disabled' : ''} />
+            </div>
+            <div class="field">
+              <label>Data de nascimento <span class="req">*</span></label>
+              <input id="f-nascimento" type="date" ${locked ? 'disabled' : ''} />
+            </div>
+            <div class="field">
+              <label>Telefone <span class="req">*</span></label>
+              <input id="f-telefone" type="text" placeholder="(00) 00000-0000" ${locked ? 'disabled' : ''} />
+            </div>
+            <div class="field span2">
+              <label>E-mail</label>
+              <input id="f-email" type="email" placeholder="nome@empresa.com" ${locked ? 'disabled' : ''} />
+            </div>
+            <div class="field">
+              <label>Estado civil <span class="req">*</span></label>
+              <select id="f-estadoCivil" ${locked ? 'disabled' : ''}>
+                <option value="">Selecione</option>
+                <option>Solteiro(a)</option><option>Casado(a)</option><option>Divorciado(a)</option>
+                <option>Viúvo(a)</option><option>União estável</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Há dependentes? <span class="req">*</span></label>
+              <select id="f-dependentes" ${locked ? 'disabled' : ''}>
+                <option value="">Selecione</option><option>Não</option><option>Sim</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Quantos dependentes</label>
+              <input id="f-numDependentes" type="number" min="0" placeholder="0" ${locked ? 'disabled' : ''} />
+            </div>
+            <div class="field">
+              <label>Menor de idade? <span class="req">*</span></label>
+              <select id="f-menoridade" ${locked ? 'disabled' : ''}>
+                <option value="">Selecione</option><option>Não</option><option>Sim</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="grid">
+            <div class="field">
+              <label>Preenchido por</label>
+              <input id="f-preenchidoPor" type="text" placeholder="Seu nome" ${locked ? 'disabled' : ''} />
+            </div>
+            <div class="field">
+              <label>Data de preenchimento</label>
+              <input id="f-dataPreenchimento" type="date" ${locked ? 'disabled' : ''} />
+            </div>
+          </div>
+          <div class="actions">
+            ${!locked ? `
+              <button class="btn btn-ghost" onclick="rhSaveDraft('${rec ? rec.id : ''}')">Salvar rascunho</button>
+              <button class="btn btn-primary" onclick="rhSendToDP('${rec ? rec.id : ''}')">Enviar para o DP →</button>
+            ` : `<button class="btn btn-ghost" disabled>Ficha já enviada para o DP</button>`}
+          </div>
+        </div>
+
+        ${rec ? historyCardHTML(rec) : ''}
+      `;
+
+      if (rec) {
+        document.getElementById('f-nome').value = rec.rh.nome || '';
+        document.getElementById('f-cpf').value = rec.rh.cpf || '';
+        document.getElementById('f-rg').value = rec.rh.rg || '';
+        document.getElementById('f-nascimento').value = rec.rh.nascimento || '';
+        document.getElementById('f-telefone').value = rec.rh.telefone || '';
+        document.getElementById('f-email').value = rec.rh.email || '';
+        document.getElementById('f-estadoCivil').value = rec.rh.estadoCivil || '';
+        document.getElementById('f-dependentes').value = rec.rh.dependentes || '';
+        document.getElementById('f-numDependentes').value = rec.rh.numDependentes || '';
+        document.getElementById('f-menoridade').value = rec.rh.menoridade || '';
+        document.getElementById('f-preenchidoPor').value = rec.rh.preenchidoPor || currentUser.nome;
+        document.getElementById('f-dataPreenchimento').value = rec.rh.dataPreenchimento || todayISO();
+      } else {
+        document.getElementById('f-dataPreenchimento').value = todayISO();
+        document.getElementById('f-preenchidoPor').value = currentUser.nome;
+      }
+      return;
+    }
+
+    // ---- lista ----
+    const meus = records.filter(r => true); // RH acompanha todas as fichas que já passaram por ele
+    el.innerHTML = `
+      <div class="view-header">
+        <div>
+          <h1>RH · Admissões</h1>
+          <div class="vh-sub">Cadastre os dados pessoais de um novo candidato ou acompanhe as fichas já enviadas.</div>
+        </div>
+        <button class="btn btn-primary" onclick="renderRH('form')">+ Nova ficha</button>
+      </div>
+      <div class="rec-list" id="rhList"></div>
+    `;
+    const listEl = document.getElementById('rhList');
+    if (meus.length === 0) {
+      listEl.innerHTML = '<div class="empty-state">Nenhuma ficha cadastrada ainda. Clique em "Nova ficha" para começar.</div>';
+      return;
+    }
+    listEl.innerHTML = meus.map(r => `
+      <div class="rec-item" onclick="renderRH('form','${r.id}')">
+        <div>
+          <div class="rec-item-name">${esc(r.rh.nome || 'Sem nome')}</div>
+          <div class="rec-item-meta">${r.id} · cargo previsto será definido pelo DP</div>
+        </div>
+        <div class="rec-item-right">
+          <span class="status-pill status-${r.status}">${STATUS_LABEL[r.status]}</span>
+        </div>
+      </div>
+    `).join('');
+  }
+  window.renderRH = renderRH;
+
+  function collectRHFields() {
+    return {
+      nome: val('f-nome'), cpf: val('f-cpf'), rg: val('f-rg'), nascimento: val('f-nascimento'),
+      telefone: val('f-telefone'), email: val('f-email'), estadoCivil: val('f-estadoCivil'),
+      dependentes: val('f-dependentes'), numDependentes: val('f-numDependentes'), menoridade: val('f-menoridade'),
+      preenchidoPor: val('f-preenchidoPor'), dataPreenchimento: val('f-dataPreenchimento') || todayISO()
+    };
+  }
+
+  window.rhSaveDraft = async function(recId) {
+    if (!val('f-nome')) {
+      document.getElementById('f-nome').classList.add('invalid');
+      toast('Preencha ao menos o nome para salvar o rascunho.');
+      return;
+    }
+    const rhData = collectRHFields();
+    let novoId = recId;
+    if (!recId) {
+      const r = await chamarRPC('rpc_rh_criar', { p_rh: rhData });
+      if (!r.ok) return;
+      novoId = r.data;
+    } else {
+      const r = await chamarRPC('rpc_rh_salvar', { p_id: recId, p_rh: rhData });
+      if (!r.ok) return;
+    }
+    await carregarRegistrosDoPapel();
+    toast('Rascunho salvo.');
+    renderRH('form', novoId);
+  };
+
+  window.rhSendToDP = async function(recId) {
+    const required = [
+      ['f-nome'],['f-cpf'],['f-rg'],['f-nascimento'],['f-telefone'],
+      ['f-estadoCivil'],['f-dependentes'],['f-menoridade']
+    ];
+    const missing = validateRequired(required);
+    if (missing.length > 0) {
+      toast('Preencha todos os campos obrigatórios (*) antes de enviar.');
+      document.getElementById(missing[0]).focus();
+      return;
+    }
+    if (!val('f-preenchidoPor')) {
+      document.getElementById('f-preenchidoPor').classList.add('invalid');
+      toast('Informe quem está preenchendo, para o histórico.');
+      return;
+    }
+    const rhData = collectRHFields();
+    let idAlvo = recId;
+    if (!idAlvo) {
+      const r = await chamarRPC('rpc_rh_criar', { p_rh: rhData });
+      if (!r.ok) return;
+      idAlvo = r.data;
+    }
+    const envio = await chamarRPC('rpc_rh_enviar', { p_id: idAlvo, p_rh: rhData, p_por: rhData.preenchidoPor });
+    if (!envio.ok) return;
+    await carregarRegistrosDoPapel();
+    toast('Ficha enviada para o DP.');
+    renderRH('lista');
+  };
+
+  // ============================================================
+  // DP — vê tudo, preenche contratuais/bancários, envia p/ segurança, finaliza
+  // ============================================================
+  let dpFilter = 'aguardando_dp';
+  let dpView = 'admissoes'; // 'admissoes' | 'usuarios'
+  const FUNCOES_URL = SUPABASE_URL + '/functions/v1/admin-usuarios';
+
+  async function chamarFuncaoAdmin(action, payload) {
+    const { data: sessao } = await supabase.auth.getSession();
+    if (!sessao || !sessao.session) { toast('Sessão expirada, faça login novamente.'); return { ok:false }; }
+    try {
+      const res = await fetch(FUNCOES_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + sessao.session.access_token },
+        body: JSON.stringify({ action, ...payload })
+      });
+      const resultado = await res.json();
+      if (!resultado.ok) { toast('Erro: ' + (resultado.error || 'falha desconhecida')); return { ok:false }; }
+      return resultado;
+    } catch(e) {
+      toast('Não foi possível conectar à função de administração.');
+      return { ok:false };
+    }
+  }
+
+  function renderDP(view, recId) {
+    view = view || (dpView === 'usuarios' ? 'usuarios' : 'lista');
+    const el = document.getElementById('screenDP');
+
+    if (view === 'usuarios') { dpView = 'usuarios'; renderDPUsuarios(); return; }
+    dpView = 'admissoes';
+
+    if (view === 'form') {
+      const rec = getRecord(recId);
+      if (!rec) { renderDP('lista'); return; }
+      const dpLocked = rec.status !== STATUS.AGUARDANDO_DP && rec.status !== STATUS.RASCUNHO;
+      const canFinalize = rec.status === STATUS.AGUARDANDO_DP_REVISAO;
+      const dp = rec.dp || {};
+      const seg = rec.seguranca || {};
+
+      el.innerHTML = `
+        <button class="detail-back" onclick="renderDP('lista')">← Voltar para a lista</button>
+        <div class="detail-title-row">
+          <div>
+            <h1>${esc(rec.rh.nome)}</h1>
+            <div class="detail-proto">${rec.id}</div>
+          </div>
+          <span class="status-pill status-${rec.status}">${STATUS_LABEL[rec.status]}</span>
+        </div>
+        ${stepperHTML(rec.status)}
+
+        <div class="card" style="margin-top:18px;">
+          <div class="section-num"><div class="n">1</div><h2>Dados pessoais</h2><span class="tag tag-basico">RH · leitura</span></div>
+          <div class="readonly-row"><div class="rl">Nome completo</div><div class="rv">${esc(rec.rh.nome)}</div></div>
+          <div class="readonly-row"><div class="rl">CPF</div><div class="rv">${esc(rec.rh.cpf)}</div></div>
+          <div class="readonly-row"><div class="rl">RG</div><div class="rv">${esc(rec.rh.rg)}</div></div>
+          <div class="readonly-row"><div class="rl">Data de nascimento</div><div class="rv">${fmtDate(rec.rh.nascimento)}</div></div>
+          <div class="readonly-row"><div class="rl">Telefone</div><div class="rv">${esc(rec.rh.telefone)}</div></div>
+          <div class="readonly-row"><div class="rl">E-mail</div><div class="rv">${esc(rec.rh.email) || '—'}</div></div>
+          <div class="readonly-row"><div class="rl">Estado civil</div><div class="rv">${esc(rec.rh.estadoCivil)}</div></div>
+          <div class="readonly-row"><div class="rl">Dependentes</div><div class="rv">${esc(rec.rh.dependentes)}${rec.rh.dependentes==='Sim' ? ' ('+(rec.rh.numDependentes||'0')+')' : ''}</div></div>
+          <div class="readonly-row"><div class="rl">Menor de idade?</div><div class="rv">${esc(rec.rh.menoridade)}</div></div>
+        </div>
+
+        <div class="card ${dpLocked ? 'locked' : ''}">
+          <div class="section-num"><div class="n">2</div><h2>Dados contratuais</h2><span class="tag tag-sensivel">Sensível</span></div>
+          ${dpLocked ? '<div class="locked-note">Etapa já enviada — campos bloqueados</div>' : ''}
+          <div class="grid">
+            <div class="field span2"><label>Empresa onde será registrado <span class="req">*</span></label>
+              <input id="d-empresa" type="text" placeholder="Razão social" ${dpLocked?'disabled':''} /></div>
+            <div class="field"><label>Cargo <span class="req">*</span></label>
+              <input id="d-cargo" type="text" placeholder="Ex: Operador de Máquinas" ${dpLocked?'disabled':''} /></div>
+            <div class="field"><label>Departamento <span class="req">*</span></label>
+              <input id="d-departamento" type="text" placeholder="Ex: Produção" ${dpLocked?'disabled':''} /></div>
+            <div class="field"><label>Tipo de contrato <span class="req">*</span></label>
+              <select id="d-tipoContrato" ${dpLocked?'disabled':''}>
+                <option value="">Selecione</option><option>CLT</option><option>PJ</option><option>Estágio</option><option>Temporário</option>
+              </select></div>
+            <div class="field"><label>Salário <span class="req">*</span></label>
+              <input id="d-salario" type="text" placeholder="R$ 0.000,00" ${dpLocked?'disabled':''} /></div>
+            <div class="field span2"><label>Observação sobre salário</label>
+              <input id="d-salarioObs" type="text" placeholder="Ex: adicional combinado verbalmente" ${dpLocked?'disabled':''} /></div>
+            <div class="field"><label>Data de admissão <span class="req">*</span></label>
+              <input id="d-admissao" type="date" ${dpLocked?'disabled':''} /></div>
+          </div>
+        </div>
+
+        <div class="card ${dpLocked ? 'locked' : ''}">
+          <div class="section-num"><div class="n">3</div><h2>Dados bancários</h2><span class="tag tag-sensivel">Sensível</span></div>
+          <div class="grid cols3">
+            <div class="field"><label>PIS/PASEP <span class="req">*</span></label><input id="d-pis" type="text" placeholder="000.00000.00-0" ${dpLocked?'disabled':''} /></div>
+            <div class="field"><label>Banco <span class="req">*</span></label><input id="d-banco" type="text" placeholder="Ex: Banco do Brasil" ${dpLocked?'disabled':''} /></div>
+            <div class="field"><label>Tipo de conta</label>
+              <select id="d-tipoConta" ${dpLocked?'disabled':''}><option value="">Selecione</option><option>Corrente</option><option>Poupança</option></select></div>
+            <div class="field"><label>Agência <span class="req">*</span></label><input id="d-agencia" type="text" placeholder="0000" ${dpLocked?'disabled':''} /></div>
+            <div class="field span2"><label>Conta <span class="req">*</span></label><input id="d-conta" type="text" placeholder="00000-0" ${dpLocked?'disabled':''} /></div>
+            <div class="field"><label>Possui PIX?</label>
+              <select id="d-temPix" ${dpLocked?'disabled':''}><option value="">Selecione</option><option>Sim</option><option>Não</option></select></div>
+            <div class="field"><label>Tipo de chave PIX</label>
+              <select id="d-tipoPix" ${dpLocked?'disabled':''}><option value="">Selecione</option><option>CPF</option><option>E-mail</option><option>Telefone</option><option>Aleatória</option></select></div>
+            <div class="field span2"><label>Chave PIX</label><input id="d-chavePix" type="text" placeholder="Conforme o tipo selecionado" ${dpLocked?'disabled':''} /></div>
+          </div>
+        </div>
+
+        <div class="card ${dpLocked ? 'locked' : ''}">
+          <div class="section-num"><div class="n">4</div><h2>Documentação anexada</h2></div>
+          <div class="checks">
+            <label class="check-row"><input type="checkbox" id="d-doc1" ${dpLocked?'disabled':''}/> Cópia do RG</label>
+            <label class="check-row"><input type="checkbox" id="d-doc2" ${dpLocked?'disabled':''}/> Cópia do CPF</label>
+            <label class="check-row"><input type="checkbox" id="d-doc3" ${dpLocked?'disabled':''}/> Comprovante de residência</label>
+            <label class="check-row"><input type="checkbox" id="d-doc4" ${dpLocked?'disabled':''}/> Carteira de trabalho</label>
+            <label class="check-row"><input type="checkbox" id="d-doc5" ${dpLocked?'disabled':''}/> Contrato assinado</label>
+            <label class="check-row"><input type="checkbox" id="d-doc6" ${dpLocked?'disabled':''}/> Comprovante de escolaridade</label>
+            <label class="check-row"><input type="checkbox" id="d-doc7" ${dpLocked?'disabled':''}/> Cartão do SUS</label>
+            <label class="check-row"><input type="checkbox" id="d-doc8" ${dpLocked?'disabled':''}/> Documentos de dependentes</label>
+            <label class="check-row"><input type="checkbox" id="d-doc9" ${dpLocked?'disabled':''}/> Certidão de casamento</label>
+          </div>
+        </div>
+
+        ${rec.status !== STATUS.AGUARDANDO_DP && rec.status !== STATUS.RASCUNHO ? `
+        <div class="card">
+          <div class="section-num"><div class="n">5</div><h2>Exame e segurança do trabalho</h2><span class="tag tag-basico">Técnico de Segurança</span></div>
+          ${seg.tipoExame ? `
+            <div class="readonly-row"><div class="rl">Tipo de exame</div><div class="rv">${esc(seg.tipoExame)}</div></div>
+            <div class="readonly-row"><div class="rl">Data do exame</div><div class="rv">${fmtDate(seg.dataExame)}</div></div>
+            <div class="readonly-row"><div class="rl">Clínica / Médico</div><div class="rv">${esc(seg.clinicaMedico) || '—'}</div></div>
+            <div class="readonly-row"><div class="rl">Resultado</div><div class="rv">${esc(seg.resultado)}</div></div>
+            <div class="readonly-row"><div class="rl">Restrições</div><div class="rv">${esc(seg.restricoes) || '—'}</div></div>
+            <div class="readonly-row"><div class="rl">EPIs necessários</div><div class="rv">${esc(seg.episNecessarios) || '—'}</div></div>
+            <div class="readonly-row"><div class="rl">Observações</div><div class="rv">${esc(seg.observacoes) || '—'}</div></div>
+            <div class="readonly-row"><div class="rl">ASO anexado</div><div class="rv">${seg.asoAnexado ? 'Sim' : 'Não'}</div></div>
+            <div class="readonly-row"><div class="rl">Preenchido por</div><div class="rv">${esc(seg.preenchidoPor)} em ${fmtDate(seg.dataPreenchimento)}</div></div>
+          ` : '<div class="empty-state">Aguardando preenchimento do técnico de segurança.</div>'}
+        </div>` : ''}
+
+        <div class="card">
+          <div class="grid">
+            <div class="field"><label>Preenchido por (DP)</label><input id="d-preenchidoPor" type="text" placeholder="Seu nome" ${dpLocked?'disabled':''} /></div>
+            <div class="field"><label>Data de preenchimento</label><input id="d-dataPreenchimento" type="date" ${dpLocked?'disabled':''} /></div>
+          </div>
+          <div class="actions">
+            ${!dpLocked ? `
+              <button class="btn btn-ghost" onclick="dpSaveDraft('${rec.id}')">Salvar</button>
+              <button class="btn btn-primary" onclick="dpSendToSeguranca('${rec.id}')">Enviar para Segurança →</button>
+            ` : ''}
+            ${canFinalize ? `<button class="btn btn-dark" onclick="dpFinalize('${rec.id}')">Marcar admissão como concluída ✓</button>` : ''}
+            ${rec.status === STATUS.CONCLUIDO ? `<button class="btn btn-ghost" disabled>Admissão concluída</button>` : ''}
+            ${rec.status === STATUS.AGUARDANDO_SEGURANCA ? `<button class="btn btn-ghost" disabled>Aguardando o técnico de segurança</button>` : ''}
+          </div>
+        </div>
+
+        ${historyCardHTML(rec)}
+      `;
+
+      document.getElementById('d-empresa').value = dp.empresa || 'Aluminas Móveis Ltda';
+      document.getElementById('d-cargo').value = dp.cargo || '';
+      document.getElementById('d-departamento').value = dp.departamento || '';
+      document.getElementById('d-tipoContrato').value = dp.tipoContrato || '';
+      document.getElementById('d-salario').value = dp.salario || '';
+      document.getElementById('d-salarioObs').value = dp.salarioObs || '';
+      document.getElementById('d-admissao').value = dp.admissao || '';
+      document.getElementById('d-pis').value = dp.pis || '';
+      document.getElementById('d-banco').value = dp.banco || '';
+      document.getElementById('d-tipoConta').value = dp.tipoConta || '';
+      document.getElementById('d-agencia').value = dp.agencia || '';
+      document.getElementById('d-conta').value = dp.conta || '';
+      document.getElementById('d-temPix').value = dp.temPix || '';
+      document.getElementById('d-tipoPix').value = dp.tipoPix || '';
+      document.getElementById('d-chavePix').value = dp.chavePix || '';
+      const docFlags = dp.documentos || {};
+      ['doc1','doc2','doc3','doc4','doc5','doc6','doc7','doc8','doc9'].forEach(k => {
+        const cb = document.getElementById('d-' + k);
+        if (cb) cb.checked = !!docFlags[k];
+      });
+      document.getElementById('d-preenchidoPor').value = dp.preenchidoPor || currentUser.nome;
+      document.getElementById('d-dataPreenchimento').value = dp.dataPreenchimento || todayISO();
+      return;
+    }
+
+    // ---- lista com filtros ----
+    const filters = [
+      ['aguardando_dp', 'Aguardando DP'],
+      ['aguardando_seguranca', 'Com Segurança'],
+      ['aguardando_dp_revisao', 'Revisão DP'],
+      ['concluido', 'Concluídas'],
+      ['todas', 'Todas']
+    ];
+    const filtered = dpFilter === 'todas' ? records : records.filter(r => r.status === dpFilter);
+
+    el.innerHTML = `
+      <div class="view-header">
+        <div>
+          <h1>DP · Admissões</h1>
+          <div class="vh-sub">Você vê todos os dados de todas as fichas, incluindo os sensíveis. Preencha contratuais/bancários e encaminhe entre setores.</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;align-items:flex-end;">
+          <button class="btn btn-ghost btn-sm" onclick="dpAbrirUsuarios()">⚙ Gestão de acessos</button>
+          <div class="view-tabs" id="dpTabs"></div>
+        </div>
+      </div>
+      <div class="rec-list" id="dpList"></div>
+    `;
+    document.getElementById('dpTabs').innerHTML = filters.map(([key,label]) => {
+      const count = key === 'todas' ? records.length : records.filter(r => r.status === key).length;
+      return `<button class="vtab ${dpFilter===key?'active':''}" onclick="dpSetFilter('${key}')">${label}<span class="cnt">${count}</span></button>`;
+    }).join('');
+
+    const listEl = document.getElementById('dpList');
+    if (filtered.length === 0) {
+      listEl.innerHTML = '<div class="empty-state">Nenhuma ficha nesse status.</div>';
+      return;
+    }
+    listEl.innerHTML = filtered.map(r => `
+      <div class="rec-item" onclick="renderDP('form','${r.id}')">
+        <div>
+          <div class="rec-item-name">${esc(r.rh.nome || 'Sem nome')}</div>
+          <div class="rec-item-meta">${r.id} ${r.dp && r.dp.cargo ? '· ' + esc(r.dp.cargo) : ''}</div>
+        </div>
+        <div class="rec-item-right">
+          ${stepperHTML(r.status)}
+          <span class="status-pill status-${r.status}">${STATUS_LABEL[r.status]}</span>
+        </div>
+      </div>
+    `).join('');
+  }
+  window.renderDP = renderDP;
+
+  window.dpSetFilter = function(key) { dpFilter = key; renderDP('lista'); };
+
+  window.dpAbrirAdmissoes = function() { dpView = 'admissoes'; renderDP('lista'); };
+  window.dpAbrirUsuarios = function() { dpView = 'usuarios'; renderDP('usuarios'); };
+
+  async function renderDPUsuarios() {
+    const el = document.getElementById('screenDP');
+    el.innerHTML = `
+      <div class="view-header">
+        <div>
+          <h1>DP · Gestão de acessos</h1>
+          <div class="vh-sub">Crie e gerencie quem pode entrar no RH, no DP e na Segurança do Trabalho.</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="dpAbrirAdmissoes()">← Voltar para admissões</button>
+      </div>
+
+      <div class="card">
+        <div class="section-num"><div class="n">+</div><h2>Novo acesso</h2></div>
+        <div class="grid cols3">
+          <div class="field"><label>Nome</label><input id="u-nome" type="text" placeholder="Nome da pessoa" /></div>
+          <div class="field"><label>E-mail</label><input id="u-email" type="email" placeholder="pessoa@aluminas.com.br" /></div>
+          <div class="field"><label>Senha temporária</label><input id="u-senha" type="text" placeholder="Mínimo 6 caracteres" /></div>
+          <div class="field"><label>Papel</label>
+            <select id="u-papel">
+              <option value="rh">RH</option>
+              <option value="dp">DP</option>
+              <option value="seguranca">Técnico de Segurança</option>
+            </select>
+          </div>
+        </div>
+        <div class="actions"><button class="btn btn-primary" onclick="dpCriarUsuario()">Criar acesso</button></div>
+        <div class="hint">A pessoa já consegue entrar com esse e-mail e senha assim que você criar. Recomenda-se avisar pra ela trocar a senha depois com você mesmo (essa tela ainda não tem "esqueci minha senha" self-service).</div>
+      </div>
+
+      <div class="card">
+        <div class="section-num"><div class="n">☰</div><h2>Acessos existentes</h2></div>
+        <div class="rec-list" id="usuariosList"><div class="empty-state">Carregando...</div></div>
+      </div>
+    `;
+
+    const r = await chamarFuncaoAdmin('listar', {});
+    const listEl = document.getElementById('usuariosList');
+    if (!r.ok) { listEl.innerHTML = '<div class="empty-state">Não foi possível carregar os acessos.</div>'; return; }
+    const usuarios = r.data || [];
+    if (usuarios.length === 0) { listEl.innerHTML = '<div class="empty-state">Nenhum acesso cadastrado ainda.</div>'; return; }
+    listEl.innerHTML = usuarios.map(u => `
+      <div class="rec-item" style="cursor:default;">
+        <div>
+          <div class="rec-item-name">${esc(u.nome)}</div>
+          <div class="rec-item-meta">${esc(u.email)}</div>
+        </div>
+        <div class="rec-item-right" style="gap:8px;flex-wrap:wrap;">
+          <select onchange="dpMudarPapel('${u.user_id}', this.value)" style="font-family:'JetBrains Mono',monospace;font-size:11px;padding:6px 8px;border-radius:6px;border:1px solid var(--line);background:var(--paper);">
+            <option value="rh" ${u.papel==='rh'?'selected':''}>RH</option>
+            <option value="dp" ${u.papel==='dp'?'selected':''}>DP</option>
+            <option value="seguranca" ${u.papel==='seguranca'?'selected':''}>Segurança</option>
+          </select>
+          <button class="btn btn-ghost btn-sm" onclick="dpResetarSenha('${u.user_id}')">Resetar senha</button>
+          <button class="btn btn-ghost btn-sm" onclick="dpExcluirUsuario('${u.user_id}','${esc(u.nome)}')">Excluir</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  window.dpCriarUsuario = async function() {
+    const nome = val('u-nome'), email = val('u-email'), senha = val('u-senha'), papel = val('u-papel');
+    if (!nome || !email || !senha) { toast('Preencha nome, e-mail e senha.'); return; }
+    if (senha.length < 6) { toast('A senha precisa ter pelo menos 6 caracteres.'); return; }
+    const r = await chamarFuncaoAdmin('criar', { nome, email, senha, papel });
+    if (!r.ok) return;
+    toast('Acesso criado.');
+    renderDPUsuarios();
+  };
+
+  window.dpMudarPapel = async function(userId, papel) {
+    const r = await chamarFuncaoAdmin('papel', { user_id: userId, papel });
+    if (r.ok) toast('Papel atualizado.');
+    else renderDPUsuarios();
+  };
+
+  window.dpResetarSenha = async function(userId) {
+    const nova = prompt('Nova senha para essa pessoa (mínimo 6 caracteres):');
+    if (!nova) return;
+    if (nova.length < 6) { toast('Senha muito curta.'); return; }
+    const r = await chamarFuncaoAdmin('senha', { user_id: userId, senha: nova });
+    if (r.ok) toast('Senha atualizada.');
+  };
+
+  window.dpExcluirUsuario = async function(userId, nome) {
+    if (!confirm('Remover o acesso de ' + nome + '? Essa ação não pode ser desfeita.')) return;
+    const r = await chamarFuncaoAdmin('excluir', { user_id: userId });
+    if (r.ok) { toast('Acesso removido.'); renderDPUsuarios(); }
+  };
+
+  function collectDPFields() {
+    return {
+      empresa: val('d-empresa'), cargo: val('d-cargo'), departamento: val('d-departamento'),
+      tipoContrato: val('d-tipoContrato'), salario: val('d-salario'), salarioObs: val('d-salarioObs'),
+      admissao: val('d-admissao'), pis: val('d-pis'), banco: val('d-banco'), tipoConta: val('d-tipoConta'),
+      agencia: val('d-agencia'), conta: val('d-conta'), temPix: val('d-temPix'), tipoPix: val('d-tipoPix'),
+      chavePix: val('d-chavePix'),
+      documentos: {
+        doc1: checked('d-doc1'), doc2: checked('d-doc2'), doc3: checked('d-doc3'), doc4: checked('d-doc4'),
+        doc5: checked('d-doc5'), doc6: checked('d-doc6'), doc7: checked('d-doc7'), doc8: checked('d-doc8'), doc9: checked('d-doc9')
+      },
+      preenchidoPor: val('d-preenchidoPor'), dataPreenchimento: val('d-dataPreenchimento') || todayISO()
+    };
+  }
+
+  window.dpSaveDraft = async function(recId) {
+    const r = await chamarRPC('rpc_dp_salvar', { p_id: recId, p_dp: collectDPFields() });
+    if (!r.ok) return;
+    await carregarRegistrosDoPapel();
+    toast('Dados salvos.');
+    renderDP('form', recId);
+  };
+
+  window.dpSendToSeguranca = async function(recId) {
+    const rec = getRecord(recId);
+    if (!rec) return;
+    const required = [
+      ['d-empresa'],['d-cargo'],['d-departamento'],['d-tipoContrato'],['d-salario'],['d-admissao'],
+      ['d-pis'],['d-banco'],['d-agencia'],['d-conta']
+    ];
+    const missing = validateRequired(required);
+    if (missing.length > 0) {
+      toast('Preencha todos os campos obrigatórios (*) antes de enviar.');
+      document.getElementById(missing[0]).focus();
+      return;
+    }
+    if (!val('d-preenchidoPor')) {
+      document.getElementById('d-preenchidoPor').classList.add('invalid');
+      toast('Informe quem está preenchendo, para o histórico.');
+      return;
+    }
+    const dpData = collectDPFields();
+    const envio = await chamarRPC('rpc_dp_enviar_seguranca', { p_id: rec.id, p_dp: dpData, p_por: dpData.preenchidoPor });
+    if (!envio.ok) return;
+    await carregarRegistrosDoPapel();
+    toast('Ficha enviada para o técnico de segurança.');
+    renderDP('lista');
+  };
+
+  window.dpFinalize = async function(recId) {
+    const rec = getRecord(recId);
+    if (!rec) return;
+    const por = val('d-preenchidoPor') || (rec.dp && rec.dp.preenchidoPor) || currentUser.nome;
+    const r = await chamarRPC('rpc_dp_finalizar', { p_id: recId, p_por: por });
+    if (!r.ok) return;
+    await carregarRegistrosDoPapel();
+    toast('Admissão concluída.');
+    renderDP('lista');
+  };
+
+  // ============================================================
+  // SEGURANÇA — vê dados básicos + o que ele preenche
+  // ============================================================
+  function renderSeguranca(view, recId) {
+    view = view || 'lista';
+    const el = document.getElementById('screenSeguranca');
+    const visibleStatuses = [STATUS.AGUARDANDO_SEGURANCA, STATUS.AGUARDANDO_DP_REVISAO, STATUS.CONCLUIDO];
+    const visible = records.filter(r => visibleStatuses.includes(r.status));
+
+    if (view === 'form') {
+      const rec = getRecord(recId);
+      if (!rec || !visibleStatuses.includes(rec.status)) { renderSeguranca('lista'); return; }
+      const editable = rec.status === STATUS.AGUARDANDO_SEGURANCA;
+      const seg = rec.seguranca || {};
+
+      el.innerHTML = `
+        <button class="detail-back" onclick="renderSeguranca('lista')">← Voltar para a lista</button>
+        <div class="detail-title-row">
+          <div><h1>${esc(rec.rh_basico.nome)}</h1><div class="detail-proto">${rec.id}</div></div>
+          <span class="status-pill status-${rec.status}">${STATUS_LABEL[rec.status]}</span>
+        </div>
+
+        <div class="card">
+          <div class="section-num"><div class="n">1</div><h2>Dados básicos</h2><span class="tag tag-basico">Visível para você</span></div>
+          <div class="readonly-row"><div class="rl">Nome completo</div><div class="rv">${esc(rec.rh_basico.nome)}</div></div>
+          <div class="readonly-row"><div class="rl">CPF</div><div class="rv">${esc(rec.rh_basico.cpf)}</div></div>
+          <div class="readonly-row"><div class="rl">RG</div><div class="rv">${esc(rec.rh_basico.rg)}</div></div>
+          <div class="readonly-row"><div class="rl">Data de nascimento</div><div class="rv">${fmtDate(rec.rh_basico.nascimento)}</div></div>
+          <div class="readonly-row"><div class="rl">Empresa</div><div class="rv">${esc(rec.dp_basico.empresa)}</div></div>
+          <div class="readonly-row"><div class="rl">Departamento</div><div class="rv">${esc(rec.dp_basico.departamento)}</div></div>
+          <div class="readonly-row"><div class="rl">Cargo</div><div class="rv">${esc(rec.dp_basico.cargo)}</div></div>
+          <div class="hint">Dados contratuais, salariais e bancários são sensíveis e não aparecem aqui.</div>
+        </div>
+
+        <div class="card ${editable ? '' : 'locked'}">
+          <div class="section-num"><div class="n">2</div><h2>Exame e segurança do trabalho</h2></div>
+          ${!editable ? '<div class="locked-note">Já enviado para o DP — campos bloqueados</div>' : ''}
+          <div class="grid">
+            <div class="field"><label>Tipo de exame <span class="req">*</span></label>
+              <select id="s-tipoExame" ${!editable?'disabled':''}>
+                <option value="">Selecione</option>
+                <option>Admissional</option><option>Periódico</option><option>Mudança de função</option>
+                <option>Retorno ao trabalho</option><option>Demissional</option>
+              </select></div>
+            <div class="field"><label>Data do exame <span class="req">*</span></label>
+              <input id="s-dataExame" type="date" ${!editable?'disabled':''} /></div>
+            <div class="field span2"><label>Clínica / Médico responsável</label>
+              <input id="s-clinicaMedico" type="text" placeholder="Nome da clínica ou médico" ${!editable?'disabled':''} /></div>
+            <div class="field"><label>Resultado <span class="req">*</span></label>
+              <select id="s-resultado" ${!editable?'disabled':''}>
+                <option value="">Selecione</option><option>Apto</option><option>Apto com restrições</option><option>Inapto</option>
+              </select></div>
+            <div class="field span2"><label>Restrições (se houver)</label>
+              <input id="s-restricoes" type="text" placeholder="Ex: sem esforço repetitivo com o braço direito" ${!editable?'disabled':''} /></div>
+            <div class="field span2"><label>EPIs necessários</label>
+              <input id="s-episNecessarios" type="text" placeholder="Ex: luva de segurança, óculos de proteção" ${!editable?'disabled':''} /></div>
+            <div class="field span2"><label>Observações</label>
+              <textarea id="s-observacoes" placeholder="Observações adicionais" ${!editable?'disabled':''}></textarea></div>
+          </div>
+          <div class="checks" style="margin-top:6px;">
+            <label class="check-row"><input type="checkbox" id="s-asoAnexado" ${!editable?'disabled':''}/> ASO anexado / arquivado</label>
+          </div>
+        </div>
+
+        <div class="card ${editable ? '' : 'locked'}">
+          <div class="grid">
+            <div class="field"><label>Preenchido por</label><input id="s-preenchidoPor" type="text" placeholder="Seu nome" ${!editable?'disabled':''} /></div>
+            <div class="field"><label>Data de preenchimento</label><input id="s-dataPreenchimento" type="date" ${!editable?'disabled':''} /></div>
+          </div>
+          <div class="actions">
+            ${editable ? `
+              <button class="btn btn-ghost" onclick="segSaveDraft('${rec.id}')">Salvar</button>
+              <button class="btn btn-primary" onclick="segSendToDP('${rec.id}')">Devolver para o DP →</button>
+            ` : `<button class="btn btn-ghost" disabled>Já devolvido para o DP</button>`}
+          </div>
+        </div>
+
+        ${historyCardHTML(rec)}
+      `;
+      document.getElementById('s-tipoExame').value = seg.tipoExame || '';
+      document.getElementById('s-dataExame').value = seg.dataExame || '';
+      document.getElementById('s-clinicaMedico').value = seg.clinicaMedico || '';
+      document.getElementById('s-resultado').value = seg.resultado || '';
+      document.getElementById('s-restricoes').value = seg.restricoes || '';
+      document.getElementById('s-episNecessarios').value = seg.episNecessarios || '';
+      document.getElementById('s-observacoes').value = seg.observacoes || '';
+      document.getElementById('s-asoAnexado').checked = !!seg.asoAnexado;
+      document.getElementById('s-preenchidoPor').value = seg.preenchidoPor || currentUser.nome;
+      document.getElementById('s-dataPreenchimento').value = seg.dataPreenchimento || todayISO();
+      return;
+    }
+
+    // ---- lista ----
+    el.innerHTML = `
+      <div class="view-header">
+        <div>
+          <h1>Segurança do Trabalho</h1>
+          <div class="vh-sub">Você vê apenas dados básicos, empresa/cargo/departamento e o que você mesmo preenche. Dados contratuais e bancários não são exibidos.</div>
+        </div>
+      </div>
+      <div class="rec-list" id="segList"></div>
+    `;
+    const listEl = document.getElementById('segList');
+    if (visible.length === 0) {
+      listEl.innerHTML = '<div class="empty-state">Nenhuma ficha aguardando o setor de segurança no momento.</div>';
+      return;
+    }
+    listEl.innerHTML = visible.map(r => `
+      <div class="rec-item" onclick="renderSeguranca('form','${r.id}')">
+        <div>
+          <div class="rec-item-name">${esc(r.rh_basico.nome || 'Sem nome')}</div>
+          <div class="rec-item-meta">${r.id} · ${esc(r.dp_basico.cargo || '')}</div>
+        </div>
+        <div class="rec-item-right">
+          <span class="status-pill status-${r.status}">${STATUS_LABEL[r.status]}</span>
+        </div>
+      </div>
+    `).join('');
+  }
+  window.renderSeguranca = renderSeguranca;
+
+  function collectSegFields() {
+    return {
+      tipoExame: val('s-tipoExame'), dataExame: val('s-dataExame'), clinicaMedico: val('s-clinicaMedico'),
+      resultado: val('s-resultado'), restricoes: val('s-restricoes'), episNecessarios: val('s-episNecessarios'),
+      observacoes: val('s-observacoes'), asoAnexado: checked('s-asoAnexado'),
+      preenchidoPor: val('s-preenchidoPor'), dataPreenchimento: val('s-dataPreenchimento') || todayISO()
+    };
+  }
+
+  window.segSaveDraft = async function(recId) {
+    const r = await chamarRPC('rpc_seguranca_salvar', { p_id: recId, p_seg: collectSegFields() });
+    if (!r.ok) return;
+    await carregarRegistrosDoPapel();
+    toast('Dados salvos.');
+    renderSeguranca('form', recId);
+  };
+
+  window.segSendToDP = async function(recId) {
+    const rec = getRecord(recId);
+    if (!rec) return;
+    const required = [['s-tipoExame'],['s-dataExame'],['s-resultado']];
+    const missing = validateRequired(required);
+    if (missing.length > 0) {
+      toast('Preencha todos os campos obrigatórios (*) antes de devolver.');
+      document.getElementById(missing[0]).focus();
+      return;
+    }
+    if (!val('s-preenchidoPor')) {
+      document.getElementById('s-preenchidoPor').classList.add('invalid');
+      toast('Informe quem está preenchendo, para o histórico.');
+      return;
+    }
+    const segData = collectSegFields();
+    const envio = await chamarRPC('rpc_seguranca_enviar', { p_id: rec.id, p_seg: segData, p_por: segData.preenchidoPor });
+    if (!envio.ok) return;
+    await carregarRegistrosDoPapel();
+    toast('Ficha devolvida para o DP.');
+    renderSeguranca('lista');
+  };
+
+  // ============================================================
+  // HISTÓRICO (compartilhado)
+  // ============================================================
+  function historyCardHTML(rec) {
+    const hist = rec.historico || [];
+    if (hist.length === 0) return '';
+    return `
+      <div class="card">
+        <div class="section-num"><div class="n">↻</div><h2>Histórico de encaminhamentos</h2></div>
+        <div class="history-list">
+          ${hist.slice().reverse().map(h => `
+            <div class="history-item"><span class="hi-dot">●</span> ${h.quando} — <b>${esc(h.de)} → ${esc(h.para)}</b> por ${esc(h.por)}</div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  // ============================================================
+  // INIT
+  // ============================================================
+  (async function init() {
+    const { data: sessao } = await supabase.auth.getSession();
+    if (sessao && sessao.session) {
+      await carregarSessaoAtual();
+    }
+  })();
+})();
+</script>
+</body>
+</html>
