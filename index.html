@@ -747,6 +747,13 @@
           </div>
         </div>
 
+        ${rec ? `
+        <div class="card">
+          <div class="section-num"><div class="n">4</div><h2>Documentos enviados pelo funcionário</h2><span class="tag tag-basico">Portal</span></div>
+          <div class="vh-sub" style="margin-bottom:12px;">Arquivos que o próprio candidato anexou pelo link do portal.</div>
+          <div class="rec-list" id="rhUploadDocs"><div class="empty-state">Carregando anexos...</div></div>
+        </div>` : ''}
+
         <div class="card">
           <div class="grid">
             <div class="field">
@@ -790,6 +797,7 @@
         document.getElementById('f-preenchidoPor').value = rec.rh.preenchidoPor || currentUser.nome;
         document.getElementById('f-dataPreenchimento').value = rec.rh.dataPreenchimento || todayISO();
         carregarDpNoRH(rec.id);
+        carregarDocsFuncionario(rec.id, 'rhUploadDocs');
       } else {
         document.getElementById('f-dataPreenchimento').value = todayISO();
         document.getElementById('f-preenchidoPor').value = currentUser.nome;
@@ -1872,8 +1880,8 @@
   // ============================================================
   let dpDocsCache = [];
 
-  async function carregarDocsFuncionario(recId) {
-    const box = document.getElementById('dpUploadDocs');
+  async function carregarDocsFuncionario(recId, boxId) {
+    const box = document.getElementById(boxId || 'dpUploadDocs');
     if (!box) return;
     const r = await chamarRPC('rpc_dp_documentos', { p_id: recId });
     const obj = (r.ok && r.data && typeof r.data === 'object' && !Array.isArray(r.data)) ? r.data : {};
