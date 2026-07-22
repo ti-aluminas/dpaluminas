@@ -265,9 +265,53 @@
     gap: 12px; cursor: pointer; transition: border-color 0.15s ease;
   }
   .rec-item:hover { border-left-color: var(--bordo); }
-  .rec-item-name { font-weight: 700; font-size: 14.5px; }
+  .rec-item-name { font-weight: 700; font-size: 14.5px; word-break: break-word; }
   .rec-item-meta { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-faint); margin-top: 3px; }
-  .rec-item-right { display: flex; align-items: center; gap: 12px; }
+  .rec-item-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+
+  /* ---------- Upload de documentos por item ---------- */
+  .doc-list { display: flex; flex-direction: column; gap: 12px; }
+  .doc-card {
+    border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; background: var(--paper);
+  }
+  .doc-card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .doc-card-title { font-weight: 700; font-size: 14px; color: var(--ink); }
+  .doc-count {
+    font-family: 'JetBrains Mono', monospace; font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em;
+    padding: 3px 9px; border-radius: 20px; background: var(--line); color: var(--ink-soft); white-space: nowrap;
+  }
+  .doc-count.ok { background: var(--ok-bg); color: var(--ok); }
+  /* dropzone estilizado escondendo o input nativo */
+  .uploader { position: relative; margin-top: 10px; }
+  .uploader input[type=file] { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+  .uploader-box {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    border: 1px dashed var(--bordo-light); border-radius: 8px; padding: 10px 12px;
+    font-size: 13px; font-weight: 600; color: var(--bordo-dark); background: var(--bordo-wash);
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .uploader:hover .uploader-box { border-color: var(--bordo); }
+  .doc-files { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+  .doc-file {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    border: 1px solid var(--line); border-radius: 8px; padding: 9px 12px; background: var(--card);
+  }
+  .doc-file-info { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .doc-file-name { font-size: 13.5px; font-weight: 600; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .doc-thumb {
+    width: 38px; height: 38px; border-radius: 6px; object-fit: cover; flex-shrink: 0;
+    border: 1px solid var(--line); background: var(--paper);
+  }
+  .doc-thumb-file {
+    display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 6px;
+    flex-shrink: 0; border: 1px solid var(--line); background: var(--paper);
+    font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 700; color: var(--ink-soft);
+  }
+  .btn-remove {
+    border: none; background: transparent; color: var(--danger); font-weight: 600; font-size: 13px;
+    cursor: pointer; padding: 4px 8px; border-radius: 6px; flex-shrink: 0;
+  }
+  .btn-remove:hover { background: var(--danger-bg); }
 
   /* ---------- Detail view ---------- */
   .detail-back {
@@ -443,11 +487,11 @@
   // ============================================================
   function getRecord(id) { return records.find(r => r.id === id); }
 
-  async function chamarRPC(nome, params) {
+  async function chamarRPC(nome, params, opts) {
     const { data, error } = await supabase.rpc(nome, params || {});
     if (error) {
       console.error(nome, error);
-      toast('Erro: ' + error.message);
+      if (!(opts && opts.silent)) toast('Erro: ' + error.message);
       return { ok: false, data: null };
     }
     return { ok: true, data };
@@ -592,9 +636,11 @@
     const el = document.getElementById('screenRH');
 
     if (view === 'form') {
-      const rec = recId ? getRecord(recId) : null;
-      const locked = rec && rec.status !== STATUS.RASCUNHO;
-      el.innerHTML = `
+  const rec = recId ? getRecord(recId) : null;
+  const locked = rec && rec.status !== STATUS.RASCUNHO;
+  // Detecta se o próprio funcionário já preencheu pelo portal.
+  const funcPreencheu = !!(rec && rec.rh && rec.rh.atualizadoPeloFuncionario);
+  el.innerHTML = `
         <button class="detail-back" onclick="renderRH('lista')">← Voltar para a lista</button>
         <div class="view-header">
           <div>
@@ -661,6 +707,47 @@
         </div>
 
         <div class="card">
+          <div class="section-num"><div class="n">2</div><h2>Dados contratuais</h2><span class="tag tag-basico">Opcional</span></div>
+          <div class="vh-sub" style="margin-bottom:12px;">Se já souber, adiante estes dados. Não é obrigatório — o DP pode completar depois. O funcionário não vê estas informações.</div>
+          <div class="grid">
+            <div class="field span2"><label>Empresa onde será registrado</label>
+              <input id="fc-empresa" type="text" placeholder="Razão social" ${locked ? 'disabled' : ''} /></div>
+            <div class="field"><label>Cargo</label>
+              <input id="fc-cargo" type="text" placeholder="Ex: Operador de Máquinas" ${locked ? 'disabled' : ''} /></div>
+            <div class="field"><label>Departamento</label>
+              <input id="fc-departamento" type="text" placeholder="Ex: Produção" ${locked ? 'disabled' : ''} /></div>
+            <div class="field"><label>Tipo de contrato</label>
+              <select id="fc-tipoContrato" ${locked ? 'disabled' : ''}>
+                <option value="">Selecione</option><option>CLT</option><option>PJ</option><option>Estágio</option><option>Temporário</option>
+              </select></div>
+            <div class="field"><label>Salário</label>
+              <input id="fc-salario" type="text" placeholder="R$ 0.000,00" ${locked ? 'disabled' : ''} /></div>
+            <div class="field span2"><label>Observação sobre salário</label>
+              <input id="fc-salarioObs" type="text" placeholder="Ex: adicional combinado verbalmente" ${locked ? 'disabled' : ''} /></div>
+            <div class="field"><label>Data de admissão</label>
+              <input id="fc-admissao" type="date" ${locked ? 'disabled' : ''} /></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="section-num"><div class="n">3</div><h2>Dados bancários</h2><span class="tag tag-basico">Opcional</span></div>
+          <div class="vh-sub" style="margin-bottom:12px;">Opcional. O próprio funcionário também pode preencher pelo portal.</div>
+          <div class="grid cols3">
+            <div class="field"><label>PIS/PASEP</label><input id="fb-pis" type="text" placeholder="000.00000.00-0" ${locked ? 'disabled' : ''} /></div>
+            <div class="field"><label>Banco</label><input id="fb-banco" type="text" placeholder="Ex: Banco do Brasil" ${locked ? 'disabled' : ''} /></div>
+            <div class="field"><label>Tipo de conta</label>
+              <select id="fb-tipoConta" ${locked ? 'disabled' : ''}><option value="">Selecione</option><option>Corrente</option><option>Poupança</option></select></div>
+            <div class="field"><label>Agência</label><input id="fb-agencia" type="text" placeholder="0000" ${locked ? 'disabled' : ''} /></div>
+            <div class="field span2"><label>Conta</label><input id="fb-conta" type="text" placeholder="00000-0" ${locked ? 'disabled' : ''} /></div>
+            <div class="field"><label>Possui PIX?</label>
+              <select id="fb-temPix" ${locked ? 'disabled' : ''}><option value="">Selecione</option><option>Sim</option><option>Não</option></select></div>
+            <div class="field"><label>Tipo de chave PIX</label>
+              <select id="fb-tipoPix" ${locked ? 'disabled' : ''}><option value="">Selecione</option><option>CPF</option><option>E-mail</option><option>Telefone</option><option>Aleatória</option></select></div>
+            <div class="field span2"><label>Chave PIX</label><input id="fb-chavePix" type="text" placeholder="Conforme o tipo selecionado" ${locked ? 'disabled' : ''} /></div>
+          </div>
+        </div>
+
+        <div class="card">
           <div class="grid">
             <div class="field">
               <label>Preenchido por</label>
@@ -671,14 +758,19 @@
               <input id="f-dataPreenchimento" type="date" ${locked ? 'disabled' : ''} />
             </div>
           </div>
+          ${rec && !locked && funcPreencheu ? `
+            <div class="locked-note" style="border-left-color:var(--bordo);background:var(--card-2, rgba(122,26,26,0.06));color:var(--ink);margin-bottom:14px;">
+              O funcionário já preencheu os dados dele. Revise e, quando estiver tudo certo, envie para o DP.
+            </div>` : ''}
           <div class="actions">
             ${!locked ? `
               ${rec ? `<button class="btn btn-ghost" onclick="rhCopiarLink('${rec.id}')">Copiar link do funcionário</button>` : ''}
-              <button class="btn btn-ghost" onclick="rhSaveDraft('${rec ? rec.id : ''}')">Salvar rascunho</button>
-              <button class="btn btn-primary" onclick="rhSendToDP('${rec ? rec.id : ''}')">Enviar para o DP →</button>
+              <button class="btn btn-primary" onclick="rhSaveDraft('${rec ? rec.id : ''}')">Salvar rascunho</button>
+              ${rec && funcPreencheu ? `<button class="btn btn-primary" onclick="rhSendToDP('${rec.id}')">Enviar para o DP →</button>` : ''}
             ` : `<button class="btn btn-ghost" disabled>Ficha já enviada para o DP</button>`}
           </div>
-          ${rec && !locked ? '<div class="vh-sub" style="margin-top:10px;">Gere o link, envie ao funcionário e peça que ele confirme o CPF para preencher os dados e anexar documentos. Ele não vê cargo nem salário.</div>' : ''}
+          ${rec && !locked && !funcPreencheu ? '<div class="vh-sub" style="margin-top:10px;">Salve o rascunho, gere o link e envie ao funcionário. Assim que ele confirmar o CPF e preencher os dados, o botão de enviar para o DP aparece aqui. Ele não vê cargo nem salário.</div>' : ''}
+          ${!rec ? '<div class="vh-sub" style="margin-top:10px;">Salve o rascunho para gerar o link do funcionário. O envio para o DP fica disponível depois que ele preencher os dados.</div>' : ''}
         </div>
 
         ${rec ? historyCardHTML(rec) : ''}
@@ -697,6 +789,7 @@
         document.getElementById('f-menoridade').value = rec.rh.menoridade || '';
         document.getElementById('f-preenchidoPor').value = rec.rh.preenchidoPor || currentUser.nome;
         document.getElementById('f-dataPreenchimento').value = rec.rh.dataPreenchimento || todayISO();
+        carregarDpNoRH(rec.id);
       } else {
         document.getElementById('f-dataPreenchimento').value = todayISO();
         document.getElementById('f-preenchidoPor').value = currentUser.nome;
@@ -744,6 +837,43 @@
     };
   }
 
+  // Contratuais + bancários (opcionais) que o RH pode adiantar.
+  // Inclui SOMENTE campos preenchidos, para nunca sobrescrever com
+  // vazio o que o DP/funcionário já tenha informado.
+  function collectRHDpFields() {
+    const pares = {
+      empresa: val('fc-empresa'), cargo: val('fc-cargo'), departamento: val('fc-departamento'),
+      tipoContrato: val('fc-tipoContrato'), salario: val('fc-salario'), salarioObs: val('fc-salarioObs'),
+      admissao: val('fc-admissao'),
+      pis: val('fb-pis'), banco: val('fb-banco'), tipoConta: val('fb-tipoConta'),
+      agencia: val('fb-agencia'), conta: val('fb-conta'), temPix: val('fb-temPix'),
+      tipoPix: val('fb-tipoPix'), chavePix: val('fb-chavePix')
+    };
+    const out = {};
+    Object.keys(pares).forEach(k => { if (pares[k] !== '' && pares[k] != null) out[k] = pares[k]; });
+    return out;
+  }
+
+  async function carregarDpNoRH(recId) {
+    const r = await chamarRPC('rpc_rh_ler_dp', { p_id: recId }, { silent: true });
+    const dp = (r.ok && r.data && typeof r.data === 'object') ? r.data : {};
+    const set = (id, v) => { const e = document.getElementById(id); if (e) e.value = v || ''; };
+    set('fc-empresa', dp.empresa); set('fc-cargo', dp.cargo); set('fc-departamento', dp.departamento);
+    set('fc-tipoContrato', dp.tipoContrato); set('fc-salario', dp.salario); set('fc-salarioObs', dp.salarioObs);
+    set('fc-admissao', dp.admissao);
+    set('fb-pis', dp.pis); set('fb-banco', dp.banco); set('fb-tipoConta', dp.tipoConta);
+    set('fb-agencia', dp.agencia); set('fb-conta', dp.conta); set('fb-temPix', dp.temPix);
+    set('fb-tipoPix', dp.tipoPix); set('fb-chavePix', dp.chavePix);
+  }
+
+  // Salva o bloco dp (contratuais/bancários) do RH, se houver algo preenchido.
+  async function salvarDpDoRH(recId) {
+    if (!recId) return;
+    const dpExtra = collectRHDpFields();
+    if (Object.keys(dpExtra).length === 0) return;
+    await chamarRPC('rpc_rh_salvar_dp', { p_id: recId, p_dp: dpExtra });
+  }
+
   window.rhSaveDraft = async function(recId) {
     if (!val('f-nome')) {
       document.getElementById('f-nome').classList.add('invalid');
@@ -760,6 +890,7 @@
       const r = await chamarRPC('rpc_rh_salvar', { p_id: recId, p_rh: rhData });
       if (!r.ok) return;
     }
+    await salvarDpDoRH(novoId);
     await carregarRegistrosDoPapel();
     toast('Rascunho salvo.');
     renderRH('form', novoId);
@@ -800,6 +931,7 @@
       if (!r.ok) return;
       idAlvo = r.data;
     }
+    await salvarDpDoRH(idAlvo);
     const envio = await chamarRPC('rpc_rh_enviar', { p_id: idAlvo, p_rh: rhData, p_por: rhData.preenchidoPor });
     if (!envio.ok) return;
     await carregarRegistrosDoPapel();
@@ -917,8 +1049,14 @@
           </div>
         </div>
 
+        <div class="card">
+          <div class="section-num"><div class="n">4</div><h2>Documentos enviados pelo funcionário</h2><span class="tag tag-basico">Portal</span></div>
+          <div class="vh-sub" style="margin-bottom:12px;">Arquivos que o próprio candidato anexou pelo link do portal.</div>
+          <div class="rec-list" id="dpUploadDocs"><div class="empty-state">Carregando anexos...</div></div>
+        </div>
+
         <div class="card ${dpLocked ? 'locked' : ''}">
-          <div class="section-num"><div class="n">4</div><h2>Documentação anexada</h2></div>
+          <div class="section-num"><div class="n">5</div><h2>Conferência de documentação</h2></div>
           <div class="checks">
             <label class="check-row"><input type="checkbox" id="d-doc1" ${dpLocked?'disabled':''}/> Cópia do RG</label>
             <label class="check-row"><input type="checkbox" id="d-doc2" ${dpLocked?'disabled':''}/> Cópia do CPF</label>
@@ -934,7 +1072,7 @@
 
         ${rec.status !== STATUS.AGUARDANDO_DP && rec.status !== STATUS.RASCUNHO ? `
         <div class="card">
-          <div class="section-num"><div class="n">5</div><h2>Exame e segurança do trabalho</h2><span class="tag tag-basico">Técnico de Segurança</span></div>
+          <div class="section-num"><div class="n">6</div><h2>Exame e segurança do trabalho</h2><span class="tag tag-basico">Técnico de Segurança</span></div>
           ${seg.tipoExame ? `
             <div class="readonly-row"><div class="rl">Tipo de exame</div><div class="rv">${esc(seg.tipoExame)}</div></div>
             <div class="readonly-row"><div class="rl">Data do exame</div><div class="rv">${fmtDate(seg.dataExame)}</div></div>
@@ -989,6 +1127,7 @@
       });
       document.getElementById('d-preenchidoPor').value = dp.preenchidoPor || currentUser.nome;
       document.getElementById('d-dataPreenchimento').value = dp.dataPreenchimento || todayISO();
+      carregarDocsFuncionario(rec.id);
       return;
     }
 
@@ -1356,14 +1495,31 @@
   };
 
   // ============================================================
+  // ITENS DE DOCUMENTO (compartilhado entre Portal e DP)
+  // O funcionário anexa de 1 a 3 arquivos por item.
+  // ============================================================
+  const DOC_ITENS = [
+    { key: 'rg',           label: 'Cópia do RG' },
+    { key: 'cpf',          label: 'Cópia do CPF' },
+    { key: 'residencia',   label: 'Comprovante de residência' },
+    { key: 'ctps',         label: 'Carteira de trabalho' },
+    { key: 'contrato',     label: 'Contrato assinado' },
+    { key: 'escolaridade', label: 'Comprovante de escolaridade' },
+    { key: 'sus',          label: 'Cartão do SUS' },
+    { key: 'dependentes',  label: 'Documentos de dependentes' },
+    { key: 'casamento',    label: 'Certidão de casamento' },
+  ];
+  const MAX_POR_ITEM = 3;
+
+  // ============================================================
   // PORTAL DO FUNCIONÁRIO — acesso por link (?portal=TOKEN) + CPF
-  // Só enxerga/edita dados pessoais + anexa documentos.
-  // Nunca vê cargo/salário (bloco dp) nem segurança.
+  // Edita dados pessoais + bancários e anexa documentos.
+  // Nunca vê cargo/salário nem segurança.
   // ============================================================
   let portalToken = null;
   let portalCpf = '';
-  let portalData = null;   // { id, status, editavel, rh, documentos }
-  let portalDocs = [];     // [{ nome, tipo, tamanho, base64 }]
+  let portalData = null;   // { id, status, editavel, rh, bancarios, documentos }
+  let portalDocs = {};     // { itemKey: [ {nome,tipo,tamanho,base64} ] }
 
   function portalMostrarTela() {
     ['screenHome','screenRH','screenDP','screenSeguranca'].forEach(id => {
@@ -1418,9 +1574,19 @@
     }
     portalCpf = cpf;
     portalData = r.data;
-    portalDocs = Array.isArray(portalData.documentos) ? portalData.documentos.slice() : [];
+    portalDocs = normalizarDocs(portalData.documentos);
     renderPortalForm();
   };
+
+  // Garante o formato { itemKey: [ ... ] } com arrays válidos.
+  function normalizarDocs(fonte) {
+    const out = {};
+    const obj = (fonte && typeof fonte === 'object' && !Array.isArray(fonte)) ? fonte : {};
+    DOC_ITENS.forEach(it => {
+      out[it.key] = Array.isArray(obj[it.key]) ? obj[it.key].slice(0, MAX_POR_ITEM) : [];
+    });
+    return out;
+  }
 
   function renderPortalForm() {
     const editavel = !!portalData.editavel;
@@ -1493,16 +1659,32 @@
       </div>
 
       <div class="card">
-        <div class="section-num"><div class="n">2</div><h2>Documentos</h2></div>
-        <div class="vh-sub" style="margin-bottom:12px;">Anexe fotos ou PDFs (RG, CPF, comprovante de residência, etc.). Limite total de 5 MB.</div>
-        ${editavel ? `
-          <div class="field">
-            <input id="p-arquivos" type="file" multiple
-              accept=".pdf,.png,.jpg,.jpeg,.webp,image/*,application/pdf"
-              onchange="portalAddFiles(this)" />
-          </div>
-        ` : ''}
-        <div class="rec-list" id="portalDocList" style="margin-top:12px;"></div>
+        <div class="section-num"><div class="n">2</div><h2>Dados bancários</h2></div>
+        <div class="vh-sub" style="margin-bottom:12px;">Preencha seus dados bancários para o pagamento. Os campos com * são recomendados.</div>
+        <div class="grid cols3">
+          <div class="field"><label>PIS/PASEP <span class="req">*</span></label>
+            <input id="p-pis" type="text" placeholder="000.00000.00-0" ${editavel ? '' : 'disabled'} /></div>
+          <div class="field"><label>Banco <span class="req">*</span></label>
+            <input id="p-banco" type="text" placeholder="Ex: Banco do Brasil" ${editavel ? '' : 'disabled'} /></div>
+          <div class="field"><label>Tipo de conta</label>
+            <select id="p-tipoConta" ${editavel ? '' : 'disabled'}><option value="">Selecione</option><option>Corrente</option><option>Poupança</option></select></div>
+          <div class="field"><label>Agência <span class="req">*</span></label>
+            <input id="p-agencia" type="text" placeholder="0000" ${editavel ? '' : 'disabled'} /></div>
+          <div class="field span2"><label>Conta <span class="req">*</span></label>
+            <input id="p-conta" type="text" placeholder="00000-0" ${editavel ? '' : 'disabled'} /></div>
+          <div class="field"><label>Possui PIX?</label>
+            <select id="p-temPix" ${editavel ? '' : 'disabled'}><option value="">Selecione</option><option>Sim</option><option>Não</option></select></div>
+          <div class="field"><label>Tipo de chave PIX</label>
+            <select id="p-tipoPix" ${editavel ? '' : 'disabled'}><option value="">Selecione</option><option>CPF</option><option>E-mail</option><option>Telefone</option><option>Aleatória</option></select></div>
+          <div class="field span2"><label>Chave PIX</label>
+            <input id="p-chavePix" type="text" placeholder="Conforme o tipo selecionado" ${editavel ? '' : 'disabled'} /></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-num"><div class="n">3</div><h2>Documentação</h2></div>
+        <div class="vh-sub" style="margin-bottom:12px;">Anexe de 1 a 3 arquivos por item (foto ou PDF). Limite total de 5 MB.</div>
+        <div id="portalDocList"></div>
       </div>
 
       ${editavel ? `
@@ -1524,6 +1706,17 @@
     document.getElementById('p-dependentes').value = rh.dependentes || '';
     document.getElementById('p-numDependentes').value = rh.numDependentes || '';
     document.getElementById('p-menoridade').value = rh.menoridade || '';
+
+    const banc = portalData.bancarios || {};
+    document.getElementById('p-pis').value = banc.pis || '';
+    document.getElementById('p-banco').value = banc.banco || '';
+    document.getElementById('p-tipoConta').value = banc.tipoConta || '';
+    document.getElementById('p-agencia').value = banc.agencia || '';
+    document.getElementById('p-conta').value = banc.conta || '';
+    document.getElementById('p-temPix').value = banc.temPix || '';
+    document.getElementById('p-tipoPix').value = banc.tipoPix || '';
+    document.getElementById('p-chavePix').value = banc.chavePix || '';
+
     renderPortalDocs();
   }
 
@@ -1534,41 +1727,77 @@
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   }
 
+  // Miniatura: imagem real quando for foto, senão selo com a extensão.
+  function docThumbHTML(d) {
+    const tipo = (d.tipo || '').toLowerCase();
+    if (tipo.startsWith('image/') && d.base64) {
+      return `<img class="doc-thumb" src="${d.base64}" alt="${esc(d.nome || 'anexo')}" />`;
+    }
+    const nome = d.nome || '';
+    const ext = nome.includes('.') ? nome.split('.').pop().slice(0, 4).toUpperCase() : 'ARQ';
+    return `<span class="doc-thumb-file">${esc(ext)}</span>`;
+  }
+
   function renderPortalDocs() {
     const list = document.getElementById('portalDocList');
     if (!list) return;
+    list.classList.add('doc-list');
     const editavel = !!portalData.editavel;
-    if (portalDocs.length === 0) {
-      list.innerHTML = '<div class="empty-state">Nenhum documento anexado ainda.</div>';
-      return;
-    }
-    list.innerHTML = portalDocs.map((d, i) => `
-      <div class="rec-item">
-        <div>
-          <div class="rec-item-name">${esc(d.nome)}</div>
-          <div class="rec-item-meta">${esc(fmtTamanho(d.tamanho))}</div>
-        </div>
-        <div class="rec-item-right">
-          ${editavel ? `<button class="btn btn-ghost" onclick="portalRemoveDoc(${i})">Remover</button>` : ''}
-        </div>
-      </div>
-    `).join('');
+    list.innerHTML = DOC_ITENS.map(it => {
+      const arquivos = portalDocs[it.key] || [];
+      const cheio = arquivos.length >= MAX_POR_ITEM;
+      const arquivosHTML = arquivos.length
+        ? `<div class="doc-files">` + arquivos.map((d, i) => `
+            <div class="doc-file">
+              <div class="doc-file-info">
+                ${docThumbHTML(d)}
+                <div style="min-width:0;">
+                  <div class="doc-file-name">${esc(d.nome)}</div>
+                  <div class="rec-item-meta">${esc(fmtTamanho(d.tamanho))}</div>
+                </div>
+              </div>
+              ${editavel ? `<button class="btn-remove" onclick="portalRemoveDoc('${it.key}',${i})">Remover</button>` : ''}
+            </div>`).join('') + `</div>`
+        : '';
+      return `
+        <div class="doc-card">
+          <div class="doc-card-head">
+            <span class="doc-card-title">${esc(it.label)}</span>
+            <span class="doc-count ${arquivos.length ? 'ok' : ''}">${arquivos.length}/${MAX_POR_ITEM}</span>
+          </div>
+          ${arquivosHTML}
+          ${editavel && !cheio ? `
+            <div class="uploader">
+              <input type="file" multiple
+                accept=".pdf,.png,.jpg,.jpeg,.webp,image/*,application/pdf"
+                onchange="portalAddFiles('${it.key}', this)" />
+              <div class="uploader-box">+ Anexar arquivo (foto ou PDF)</div>
+            </div>` : ''}
+          ${editavel && cheio ? `<div class="rec-item-meta" style="margin-top:8px;">Limite de ${MAX_POR_ITEM} arquivos atingido.</div>` : ''}
+        </div>`;
+    }).join('');
   }
 
-  window.portalAddFiles = function(input) {
-    const files = Array.from(input.files || []);
+  window.portalAddFiles = function(itemKey, input) {
+    const atual = portalDocs[itemKey] || [];
+    const espaco = MAX_POR_ITEM - atual.length;
+    let files = Array.from(input.files || []);
+    if (files.length > espaco) {
+      toast(`Máximo de ${MAX_POR_ITEM} arquivos por item. Só os primeiros ${espaco} serão anexados.`);
+      files = files.slice(0, espaco);
+    }
     let pendentes = files.length;
-    if (!pendentes) return;
+    if (!pendentes) { input.value = ''; return; }
     files.forEach(file => {
       const reader = new FileReader();
       reader.onload = () => {
-        portalDocs.push({ nome: file.name, tipo: file.type, tamanho: file.size, base64: reader.result });
+        if (!portalDocs[itemKey]) portalDocs[itemKey] = [];
+        portalDocs[itemKey].push({ nome: file.name, tipo: file.type, tamanho: file.size, base64: reader.result });
         pendentes--;
         if (pendentes === 0) {
           input.value = '';
           renderPortalDocs();
-          const total = portalDocs.reduce((s, d) => s + (d.base64 ? d.base64.length : 0), 0);
-          if (total > 5 * 1024 * 1024) toast('Atenção: os anexos estão perto do limite de 5 MB.');
+          if (tamanhoTotalDocs() > 5 * 1024 * 1024) toast('Atenção: os anexos estão perto do limite de 5 MB.');
         }
       };
       reader.onerror = () => { pendentes--; toast('Não consegui ler o arquivo ' + file.name); };
@@ -1576,39 +1805,118 @@
     });
   };
 
-  window.portalRemoveDoc = function(i) {
-    portalDocs.splice(i, 1);
+  window.portalRemoveDoc = function(itemKey, i) {
+    if (portalDocs[itemKey]) portalDocs[itemKey].splice(i, 1);
     renderPortalDocs();
   };
 
+  function tamanhoTotalDocs() {
+    let total = 0;
+    Object.values(portalDocs).forEach(arr => (arr || []).forEach(d => { total += d.base64 ? d.base64.length : 0; }));
+    return total;
+  }
+
   window.portalSalvar = async function() {
-    const required = [['p-nome'],['p-rg'],['p-nascimento'],['p-telefone'],['p-estadoCivil'],['p-dependentes'],['p-menoridade']];
-    const missing = validateRequired(required);
-    if (missing.length > 0) {
-      toast('Preencha todos os campos obrigatórios (*).');
-      document.getElementById(missing[0]).focus();
+    // Nada é obrigatório para salvar, mas avisamos o que ainda falta.
+    const faltando = [];
+    [['p-nome','Nome completo'],['p-rg','RG'],['p-nascimento','Data de nascimento'],
+     ['p-telefone','Telefone'],['p-estadoCivil','Estado civil'],['p-dependentes','Há dependentes?'],
+     ['p-menoridade','Menor de idade?'],['p-pis','PIS/PASEP'],['p-banco','Banco'],
+     ['p-agencia','Agência'],['p-conta','Conta']
+    ].forEach(([id, rotulo]) => { if (!val(id)) faltando.push(rotulo); });
+    DOC_ITENS.forEach(it => { if (!(portalDocs[it.key] || []).length) faltando.push('Documento: ' + it.label); });
+
+    if (tamanhoTotalDocs() > 5 * 1024 * 1024) {
+      toast('Os anexos ultrapassam o limite de 5 MB. Remova alguns arquivos.');
       return;
     }
+
+    if (faltando.length > 0) {
+      const lista = faltando.slice(0, 6).join(', ') + (faltando.length > 6 ? '…' : '');
+      const ok = confirm('Ainda faltam dados obrigatórios:\n\n' + faltando.join('\n') +
+        '\n\nVocê pode salvar mesmo assim e completar depois. Deseja salvar agora?');
+      if (!ok) return;
+      toast('Salvo. Lembre-se de completar: ' + lista);
+    }
+
     const rhData = {
       nome: val('p-nome'), rg: val('p-rg'), nascimento: val('p-nascimento'),
       telefone: val('p-telefone'), email: val('p-email'), estadoCivil: val('p-estadoCivil'),
       dependentes: val('p-dependentes'), numDependentes: val('p-numDependentes'), menoridade: val('p-menoridade')
     };
+    const bancData = {
+      pis: val('p-pis'), banco: val('p-banco'), tipoConta: val('p-tipoConta'),
+      agencia: val('p-agencia'), conta: val('p-conta'), temPix: val('p-temPix'),
+      tipoPix: val('p-tipoPix'), chavePix: val('p-chavePix')
+    };
     const btn = document.getElementById('portalBtnSalvar');
     btn.disabled = true; btn.textContent = 'Enviando...';
     const r = await chamarRPC('rpc_portal_salvar', {
-      p_token: portalToken, p_cpf: portalCpf, p_rh: rhData, p_documentos: portalDocs
+      p_token: portalToken, p_cpf: portalCpf, p_rh: rhData, p_bancarios: bancData, p_documentos: portalDocs
     });
     btn.disabled = false; btn.textContent = 'Enviar meus dados →';
     if (!r.ok) return;
-    toast('Dados enviados com sucesso! Obrigado.');
-    // Recarrega em modo leitura confirmando o envio
+    if (faltando.length === 0) toast('Dados enviados com sucesso! Obrigado.');
+    // Recarrega mantendo os dados atualizados
     const rr = await chamarRPC('rpc_portal_abrir', { p_token: portalToken, p_cpf: portalCpf });
     if (rr.ok) {
       portalData = rr.data;
-      portalDocs = Array.isArray(portalData.documentos) ? portalData.documentos.slice() : [];
+      portalDocs = normalizarDocs(portalData.documentos);
       renderPortalForm();
     }
+  };
+
+  // ============================================================
+  // ANEXOS DO PORTAL (visão do DP/RH) — lista e baixa os arquivos
+  // que o funcionário enviou pelo link do portal.
+  // ============================================================
+  let dpDocsCache = [];
+
+  async function carregarDocsFuncionario(recId) {
+    const box = document.getElementById('dpUploadDocs');
+    if (!box) return;
+    const r = await chamarRPC('rpc_dp_documentos', { p_id: recId });
+    const obj = (r.ok && r.data && typeof r.data === 'object' && !Array.isArray(r.data)) ? r.data : {};
+    dpDocsCache = [];
+    const blocos = DOC_ITENS.map(it => {
+      const arquivos = Array.isArray(obj[it.key]) ? obj[it.key] : [];
+      const linhas = arquivos.map(d => {
+        const idx = dpDocsCache.push(d) - 1;
+        return `
+          <div class="rec-item">
+            <div>
+              <div class="rec-item-name">${esc(d.nome || 'arquivo')}</div>
+              <div class="rec-item-meta">${esc(fmtTamanho(d.tamanho))}</div>
+            </div>
+            <div class="rec-item-right">
+              <button class="btn btn-ghost" onclick="baixarDocFuncionario(${idx})">Baixar</button>
+            </div>
+          </div>`;
+      }).join('');
+      return `
+        <div class="doc-item" style="padding:12px 0;border-top:1px solid var(--line);">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+            <label style="font-weight:600;">${esc(it.label)}</label>
+            <span class="rec-item-meta">${arquivos.length} arquivo(s)</span>
+          </div>
+          <div class="rec-list" style="margin-top:8px;">${linhas || '<div class="empty-state" style="padding:8px 0;">Não enviado.</div>'}</div>
+        </div>`;
+    }).join('');
+    const total = dpDocsCache.length;
+    box.innerHTML = total === 0
+      ? '<div class="empty-state">O funcionário ainda não anexou documentos pelo portal.</div>'
+      : blocos;
+  }
+
+  window.baixarDocFuncionario = function(i) {
+    const d = dpDocsCache[i];
+    if (!d || !d.base64) { toast('Arquivo indisponível.'); return; }
+    const a = document.createElement('a');
+    a.href = d.base64;
+    a.download = d.nome || ('documento-' + (i+1));
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
 
   // ============================================================
