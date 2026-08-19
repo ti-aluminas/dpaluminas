@@ -342,6 +342,9 @@
   .rec-item:last-child { border-radius: 0 0 var(--radius) var(--radius); }
   .rec-item:only-child { border-radius: var(--radius); }
   .rec-item:hover { background: var(--surface-sunk); position: relative; z-index: 1; }
+  .rec-item-previa { background: var(--surface-sunk); }
+  .rec-item-previa .rec-item-name { color: var(--ink-soft); font-weight: 500; }
+  .rec-item-previa:hover { background: var(--surface); }
   .rec-item-name { font-weight: 600; font-size: 14px; word-break: break-word; }
   .rec-item-meta { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: var(--ink-faint); margin-top: 2px; letter-spacing: -0.01em; }
   .rec-item-right { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
@@ -1433,7 +1436,11 @@
     if (view === 'form') {
       const rec = getRecord(recId);
       if (!rec) { renderDP('lista'); return; }
-      const dpLocked = rec.status !== STATUS.AGUARDANDO_DP && rec.status !== STATUS.RASCUNHO;
+      // Rascunho deixa de ser editavel pelo DP: com a aba de previsao,
+      // ele conseguiria preencher e mandar para a Seguranca uma ficha
+      // que o RH ainda esta montando, pulando a etapa inteira.
+      const emPreparacao = rec.status === STATUS.RASCUNHO;
+      const dpLocked = rec.status !== STATUS.AGUARDANDO_DP;
       const canFinalize = rec.status === STATUS.AGUARDANDO_DP_REVISAO;
       const dp = rec.dp || {};
       const seg = rec.seguranca || {};
@@ -1448,6 +1455,7 @@
           <span class="status-pill status-${rec.status}">${STATUS_LABEL[rec.status]}</span>
         </div>
         ${bandHTML(rec.status)}
+        ${emPreparacao ? `<div class="callout">${ICO.info}<span>Ficha ainda em preparação no RH. Ela abre para edição quando o RH encaminhar.</span></div>` : ''}
 
         <div class="card">
           <div class="section-num"><div class="n">1</div><h2>Dados pessoais</h2><span class="tag tag-basico">RH · leitura</span></div>
@@ -1592,9 +1600,11 @@
       ['aguardando_seguranca', 'Com Segurança'],
       ['aguardando_dp_revisao', 'Revisão DP'],
       ['concluido', 'Concluídas'],
+      ['rascunho', 'No RH'],
       ['todas', 'Todas']
     ];
     const filtered = dpFilter === 'todas' ? records : records.filter(r => r.status === dpFilter);
+    const soLeitura = dpFilter === 'rascunho';
 
     el.innerHTML = `
       <div class="view-header">
@@ -1616,21 +1626,34 @@
 
     const listEl = document.getElementById('dpList');
     if (filtered.length === 0) {
-      listEl.innerHTML = '<div class="empty-state">Nenhuma ficha neste filtro. Troque a aba acima para ver as fichas em outra etapa.</div>';
+      listEl.innerHTML = soLeitura
+        ? '<div class="empty-state">O RH não tem nenhuma ficha em preparação no momento.</div>'
+        : '<div class="empty-state">Nenhuma ficha neste filtro.</div>';
       return;
     }
-    listEl.innerHTML = filtered.map(r => `
-      <div class="rec-item" onclick="renderDP('form','${r.id}')">
+    // Na previsao, quem ja confirmou pelo portal vem primeiro:
+    // sao as fichas que de fato estao a caminho.
+    const ordenadas = soLeitura
+      ? filtered.slice().sort((a, b) =>
+          Number(!!(b.rh && b.rh.atualizadoPeloFuncionario)) -
+          Number(!!(a.rh && a.rh.atualizadoPeloFuncionario)))
+      : filtered;
+
+    listEl.innerHTML = ordenadas.map(r => {
+      const confirmou = !!(r.rh && r.rh.atualizadoPeloFuncionario);
+      return `
+      <div class="rec-item ${soLeitura ? 'rec-item-previa' : ''}" onclick="renderDP('form','${r.id}')">
         <div>
           <div class="rec-item-name">${esc(r.rh.nome || 'Sem nome')}</div>
-          <div class="rec-item-meta">${r.id} ${r.dp && r.dp.cargo ? '· ' + esc(r.dp.cargo) : ''}</div>
+          <div class="rec-item-meta">${r.id}${r.dp && r.dp.cargo ? ' · ' + esc(r.dp.cargo) : ''}${
+            soLeitura ? ' · ' + (confirmou ? 'funcionário confirmou' : 'aguardando o funcionário') : ''}</div>
         </div>
         <div class="rec-item-right">
           ${stepperHTML(r.status)}
-          <span class="status-pill status-${r.status}">${STATUS_LABEL[r.status]}</span>
+          <span class="status-pill status-${r.status}">${soLeitura ? 'No RH' : STATUS_LABEL[r.status]}</span>
         </div>
-      </div>
-    `).join('');
+      </div>`;
+    }).join('');
   }
   window.renderDP = renderDP;
 
