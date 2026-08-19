@@ -5,31 +5,43 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Aluminas · Sistema de Admissão</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap');
 
+  /* ============================================================
+     Aluminas · Sistema de Admissão
+     Direção: livro de registro. Papel neutro frio, tipografia
+     estreita nos títulos, mono restrito a dado e identificador.
+     Bordô institucional reservado para ação e para a etapa ativa.
+     ============================================================ */
   :root {
     --bordo: #5E0202;
-    --bordo-dark: #460202;
-    --bordo-deep: #340101;
-    --bordo-light: #C79A9A;
-    --bordo-wash: #F5EAEA;
-    --ink: #211D18;
-    --ink-soft: #6B6255;
-    --ink-faint: #9A927F;
-    --paper: #F7F4EF;
-    --card: #FFFFFF;
-    --line: #E6DFD1;
-    --ok: #3F6B4A;
-    --ok-bg: #E4EEE5;
-    --warn: #B5792B;
-    --warn-bg: #F5E9D6;
-    --info: #4A6B8A;
-    --info-bg: #E2EBF1;
-    --violet: #6C5B8C;
-    --violet-bg: #EBE7F2;
-    --danger: #A6402B;
-    --danger-bg: #F3E0D8;
-    --shadow: 0 1px 2px rgba(33,29,24,0.04), 0 8px 24px -12px rgba(33,29,24,0.12);
+    --bordo-dark: #470101;
+    --bordo-wash: #F6EDED;
+    --bordo-edge: #D8C0C0;
+
+    --ink: #1B1F24;
+    --ink-soft: #59616B;
+    --ink-faint: #8B939D;
+
+    --fog: #EDEFF2;
+    --surface: #FFFFFF;
+    --surface-sunk: #F5F7F9;
+    --rule: #DDE1E6;
+    --rule-soft: #E9ECEF;
+
+    --ok: #1F6B4B;
+    --ok-bg: #E3F0EA;
+    --warn: #8A5A12;
+    --warn-bg: #F7EEDD;
+    --info: #1F4E7A;
+    --info-bg: #E4EDF5;
+    --violet: #4A3E7A;
+    --violet-bg: #E9E7F3;
+    --danger: #96301F;
+    --danger-bg: #F7E4E0;
+
+    --lift: 0 1px 1px rgba(27,31,36,0.03), 0 6px 18px -10px rgba(27,31,36,0.14);
+    --radius: 6px;
   }
 
   * { box-sizing: border-box; }
@@ -37,316 +49,403 @@
   body {
     margin: 0;
     font-family: 'Inter', sans-serif;
-    background: var(--paper);
+    font-size: 14px;
+    background: var(--fog);
     color: var(--ink);
     -webkit-font-smoothing: antialiased;
   }
-  ::selection { background: var(--bordo-light); }
+  ::selection { background: var(--bordo-wash); }
+  h1, h2, h3 { font-family: 'Inter Tight', 'Inter', sans-serif; letter-spacing: -0.015em; }
+  :focus-visible { outline: 2px solid var(--bordo); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 
   .app { min-height: 100vh; display: flex; flex-direction: column; }
+  .icon { width: 15px; height: 15px; flex-shrink: 0; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 
   /* ---------- Top bar ---------- */
   .topbar {
-    background: #fff;
-    color: var(--ink);
-    border-bottom: 3px solid var(--bordo);
-    padding: 12px 22px;
-    display: flex; align-items: center; justify-content: space-between; gap: 14px;
-    flex-wrap: wrap;
+    background: var(--surface);
+    border-bottom: 1px solid var(--rule);
+    box-shadow: inset 0 -3px 0 var(--bordo);
+    padding: 0 24px;
+    height: 60px;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    position: sticky; top: 0; z-index: 50;
   }
-  .topbar-brand { display: flex; align-items: center; gap: 14px; }
-  .topbar-brand img { height: 34px; width: auto; display: block; }
+  .topbar-brand { display: flex; align-items: center; gap: 16px; min-width: 0; }
+  .topbar-brand img { height: 30px; width: auto; display: block; }
   .topbar-brand .sub {
-    font-family: 'JetBrains Mono', monospace; font-size: 10.5px; letter-spacing: 0.14em;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.16em;
     text-transform: uppercase; color: var(--ink-faint);
-    border-left: 1px solid var(--line); padding-left: 14px;
+    border-left: 1px solid var(--rule); padding-left: 16px; white-space: nowrap;
   }
-  .topbar-right { display: flex; align-items: center; gap: 12px; }
+  @media (max-width: 620px) { .topbar { padding: 0 14px; } .topbar-brand .sub { display: none; } }
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
   .role-badge {
-    font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
-    background: var(--bordo-wash); color: var(--bordo-dark);
-    border: 1px solid var(--bordo-light);
-    padding: 6px 12px; border-radius: 20px;
+    font-family: 'JetBrains Mono', monospace; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--ink-soft); background: var(--surface-sunk);
+    border: 1px solid var(--rule); padding: 6px 10px; border-radius: var(--radius);
+    max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
-  .btn-exit {
+  .mesa-switch {
     font-family: 'Inter', sans-serif; font-size: 12.5px; font-weight: 600;
-    background: transparent; border: 1px solid var(--bordo); color: var(--bordo);
-    padding: 7px 14px; border-radius: 20px; cursor: pointer;
+    padding: 7px 10px; border-radius: var(--radius); cursor: pointer;
+    border: 1px solid var(--bordo-edge); background: var(--bordo-wash); color: var(--bordo);
   }
-  .btn-exit:hover { background: var(--bordo-wash); }
+  .mesa-switch:hover { border-color: var(--bordo); }
 
-  /* ---------- Layout containers ---------- */
-  .main { flex: 1; padding: 32px 20px 80px; }
-  .container { max-width: 1080px; margin: 0 auto; }
-  .container.narrow { max-width: 760px; }
+  .btn-exit {
+    font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+    background: transparent; border: 1px solid var(--rule); color: var(--ink);
+    padding: 7px 13px; border-radius: var(--radius); cursor: pointer;
+    display: inline-flex; align-items: center; gap: 7px;
+  }
+  .btn-exit:hover { border-color: var(--bordo); color: var(--bordo); }
+
+  /* ---------- Containers ---------- */
+  .main { flex: 1; padding: 30px 24px 90px; }
+  @media (max-width: 620px) { .main { padding: 20px 14px 70px; } }
+  .container { max-width: 1000px; margin: 0 auto; }
 
   /* ---------- Home ---------- */
-  .home-hero { text-align: center; margin: 18px 0 40px; }
+  .home-hero { max-width: 560px; margin: 8px 0 30px; }
   .home-hero .eyebrow {
-    font-family: 'JetBrains Mono', monospace; font-size: 11.5px; letter-spacing: 0.18em; text-transform: uppercase;
-    color: var(--bordo-dark); font-weight: 600;
+    font-family: 'JetBrains Mono', monospace; font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--bordo); font-weight: 600;
   }
-  .home-hero h1 {
-    font-family: 'Fraunces', serif; font-weight: 600; font-size: 34px; margin: 8px 0 10px; color: var(--ink);
-  }
-  .home-hero p { color: var(--ink-soft); font-size: 14.5px; max-width: 480px; margin: 0 auto; line-height: 1.6; }
+  .home-hero h1 { font-size: 30px; font-weight: 600; margin: 10px 0 12px; line-height: 1.15; }
+  .home-hero p { color: var(--ink-soft); font-size: 15px; margin: 0; line-height: 1.6; }
 
-  .role-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-bottom: 44px; }
-  @media (max-width: 760px) { .role-grid { grid-template-columns: 1fr; } }
+  .home-cols { display: grid; grid-template-columns: 1.15fr 1fr; gap: 20px; align-items: start; }
+  @media (max-width: 820px) { .home-cols { grid-template-columns: 1fr; } }
 
-  .role-card {
-    background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--bordo);
-    border-radius: 10px; padding: 28px 22px; cursor: pointer; box-shadow: var(--shadow);
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
-    display: flex; align-items: center; justify-content: space-between; gap: 12px;
-    position: relative; overflow: hidden;
-  }
-  .role-card:hover { transform: translateY(-3px); box-shadow: 0 4px 8px rgba(33,29,24,0.06), 0 16px 32px -14px rgba(33,29,24,0.18); }
-  .role-card h3 { font-family: 'Fraunces', serif; font-size: 22px; margin: 0; color: var(--ink); letter-spacing: 0.01em; }
-  .role-card .rc-arrow {
-    font-size: 18px; color: var(--bordo);
-    transition: transform 0.15s ease;
-  }
-  .role-card:hover .rc-arrow { transform: translateX(4px); }
-
-  /* Overview status board (public, no dados sensíveis) */
-  .overview-card {
-    background: var(--card); border: 1px solid var(--line); border-radius: 10px;
-    padding: 22px; box-shadow: var(--shadow);
-  }
-  .overview-card h2 {
-    font-family: 'JetBrains Mono', monospace; font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em;
-    color: var(--ink-soft); margin: 0 0 4px;
-  }
-  .overview-card .ov-sub { font-size: 12.5px; color: var(--ink-faint); margin-bottom: 18px; }
-
-  .tracker-row {
-    display: flex; align-items: center; justify-content: space-between; gap: 10px;
-    padding: 14px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper);
-    margin-bottom: 10px;
-  }
-  .tracker-name { font-weight: 700; font-size: 14px; }
-  .tracker-meta { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: var(--ink-faint); margin-top: 2px; }
-
-  .stepper { display: flex; align-items: center; gap: 4px; }
-  .step-dot {
+  /* Trilha do processo — elemento-assinatura, também usado nas fichas */
+  .flow { display: flex; flex-direction: column; }
+  .flow-step { display: grid; grid-template-columns: 26px 1fr; gap: 14px; }
+  .flow-mark { display: flex; flex-direction: column; align-items: center; }
+  .flow-num {
     width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-    font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; flex-shrink: 0;
-    background: var(--line); color: var(--ink-faint); border: 2px solid var(--line);
+    font-family: 'JetBrains Mono', monospace; font-size: 10.5px; font-weight: 700;
+    border: 1px solid var(--rule); background: var(--surface); color: var(--ink-faint); flex-shrink: 0;
   }
-  .step-dot.done { background: var(--bordo); color: #fff; border-color: var(--bordo-dark); }
-  .step-dot.current { background: #fff; color: var(--bordo-dark); border-color: var(--bordo); box-shadow: 0 0 0 3px var(--bordo-light); }
-  .step-line { width: 22px; height: 2px; background: var(--line); }
-  .step-line.done { background: var(--bordo); }
+  .flow-tail { flex: 1; width: 1px; background: var(--rule); min-height: 14px; margin: 4px 0; }
+  .flow-step:last-child .flow-tail { display: none; }
+  .flow-body { padding-bottom: 18px; }
+  .flow-step:last-child .flow-body { padding-bottom: 0; }
+  .flow-desk {
+    font-family: 'JetBrains Mono', monospace; font-size: 10.5px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ink-faint); font-weight: 600;
+  }
+  .flow-what { font-size: 13.5px; color: var(--ink-soft); line-height: 1.5; margin-top: 3px; }
+  .flow-step.done .flow-num { background: var(--surface-sunk); color: var(--ink-soft); border-color: var(--rule); }
+  .flow-step.done .flow-tail { background: var(--bordo-edge); }
+  .flow-step.done .flow-desk { color: var(--ink-soft); }
+  .flow-step.current .flow-num { background: var(--bordo); border-color: var(--bordo); color: #fff; }
+  .flow-step.current .flow-desk { color: var(--bordo); }
+  .flow-step.current .flow-what { color: var(--ink); font-weight: 500; }
+
+  /* Faixa de etapa nas telas de ficha */
+  .band {
+    display: grid; grid-auto-flow: column; grid-auto-columns: 1fr;
+    border: 1px solid var(--rule); border-radius: var(--radius); background: var(--surface);
+    overflow: hidden; margin-bottom: 20px;
+  }
+  .band-cell { padding: 11px 14px; border-left: 1px solid var(--rule-soft); }
+  .band-cell:first-child { border-left: none; }
+  .band-desk {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--ink-faint); font-weight: 600;
+  }
+  .band-state { font-size: 12.5px; color: var(--ink-faint); margin-top: 4px; }
+  .band-cell.done { background: var(--surface-sunk); }
+  .band-cell.done .band-state { color: var(--ink-soft); }
+  .band-cell.current { box-shadow: inset 0 -3px 0 var(--bordo); }
+  .band-cell.current .band-desk { color: var(--bordo); }
+  .band-cell.current .band-state { color: var(--ink); font-weight: 600; }
+  @media (max-width: 700px) { .band { grid-auto-flow: row; grid-auto-columns: auto; } .band-cell { border-left: none; border-top: 1px solid var(--rule-soft); } .band-cell:first-child { border-top: none; } .band-cell.current { box-shadow: inset 3px 0 0 var(--bordo); } }
+
+  /* Indicador compacto na lista */
+  .stepper { display: flex; align-items: center; gap: 3px; }
+  .step-dot {
+    width: 7px; height: 7px; border-radius: 50%; background: var(--rule); flex-shrink: 0;
+    font-size: 0; color: transparent; border: none; display: block;
+  }
+  .step-dot.done { background: var(--bordo-edge); }
+  .step-dot.current { background: var(--bordo); box-shadow: 0 0 0 3px var(--bordo-wash); }
+  .step-line { width: 8px; height: 1px; background: var(--rule); }
+  .step-line.done { background: var(--bordo-edge); }
 
   .empty-state {
-    text-align: center; padding: 30px 10px; color: var(--ink-faint); font-size: 13.5px; font-style: italic;
+    padding: 26px 16px; color: var(--ink-faint); font-size: 13.5px; line-height: 1.6;
+    border: 1px dashed var(--rule); border-radius: var(--radius); background: var(--surface-sunk);
   }
 
-  /* ---------- Pin modal ---------- */
+  /* ---------- Modal ---------- */
   .modal-overlay {
-    position: fixed; inset: 0; background: rgba(33,29,24,0.55); backdrop-filter: blur(2px);
+    position: fixed; inset: 0; background: rgba(27,31,36,0.5);
     display: flex; align-items: center; justify-content: center; z-index: 100; padding: 20px;
   }
   .modal-box {
-    background: var(--card); border-radius: 12px; border-top: 4px solid var(--bordo);
-    padding: 26px 26px 24px; width: 100%; max-width: 340px; box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    background: var(--surface); border-radius: var(--radius); border-top: 3px solid var(--bordo);
+    padding: 26px; width: 100%; max-width: 380px; box-shadow: 0 24px 60px rgba(0,0,0,0.28);
   }
-  .modal-box h3 { font-family: 'Fraunces', serif; font-size: 19px; margin: 0 0 4px; }
-  .modal-box .ms { font-size: 12.5px; color: var(--ink-soft); margin-bottom: 16px; }
+  .modal-box h3 { font-size: 19px; font-weight: 600; margin: 0 0 6px; }
+  .modal-box .ms { font-size: 13px; color: var(--ink-soft); margin-bottom: 18px; line-height: 1.5; }
   .modal-box input {
-    width: 100%; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.3em; text-align: center; font-size: 18px;
-    padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink);
+    width: 100%; font-family: 'Inter', sans-serif; font-size: 14px;
+    padding: 10px 12px; border: 1px solid var(--rule); border-radius: var(--radius);
+    background: var(--surface); color: var(--ink);
   }
-  .modal-box input:focus { outline: 2px solid var(--bordo); outline-offset: 1px; }
-  .modal-actions { display: flex; gap: 10px; margin-top: 16px; }
-  .modal-err { color: var(--danger); font-size: 12px; margin-top: 8px; display: none; }
+  .modal-box input:focus { outline: 2px solid var(--bordo); outline-offset: -1px; border-color: var(--bordo); }
+  .modal-actions { display: flex; gap: 10px; margin-top: 18px; }
+  .modal-err { color: var(--danger); font-size: 12.5px; margin-top: 10px; display: none; }
   .modal-err.show { display: block; }
 
   /* ---------- Buttons ---------- */
   .btn {
     font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
-    border: none; border-radius: 8px; padding: 11px 18px; cursor: pointer;
-    transition: transform 0.08s ease, background 0.15s ease; display: inline-flex; align-items: center; gap: 7px;
+    border: 1px solid transparent; border-radius: var(--radius); padding: 9px 15px; cursor: pointer;
+    transition: background 0.12s ease, border-color 0.12s ease;
+    display: inline-flex; align-items: center; gap: 7px; line-height: 1.4;
   }
-  .btn:active { transform: translateY(1px); }
-  .btn-primary { background: var(--bordo); color: #fff; }
+  .btn-primary { background: var(--bordo); color: #fff; border-color: var(--bordo); }
   .btn-primary:hover { background: var(--bordo-dark); }
-  .btn-ghost { background: transparent; border: 1px solid var(--line); color: var(--ink); }
-  .btn-ghost:hover { background: var(--bordo-wash); border-color: var(--bordo-light); }
-  .btn-dark { background: var(--ink); color: var(--bordo-light); }
-  .btn-dark:hover { background: #33291d; }
+  .btn-ghost { background: var(--surface); border-color: var(--rule); color: var(--ink); }
+  .btn-ghost:hover { border-color: var(--ink-faint); }
+  .btn-dark { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .btn-dark:hover { background: #2C333B; }
+  .btn-danger { background: var(--surface); border-color: var(--bordo-edge); color: var(--danger); }
+  .btn-danger:hover { background: var(--danger-bg); border-color: var(--danger); }
   .btn-block { width: 100%; justify-content: center; }
-  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
-  .btn-sm { padding: 7px 12px; font-size: 12px; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-sm { padding: 6px 11px; font-size: 12.5px; }
 
-  /* ---------- Section header inside role views ---------- */
+  /* ---------- View header ---------- */
   .view-header {
-    display: flex; justify-content: space-between; align-items: flex-end; gap: 14px; flex-wrap: wrap;
-    margin-bottom: 22px; border-bottom: 2px solid var(--line); padding-bottom: 16px;
+    display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap;
+    margin-bottom: 22px; border-bottom: 1px solid var(--rule); padding-bottom: 16px;
   }
-  .view-header h1 { font-family: 'Fraunces', serif; font-size: 26px; margin: 0 0 6px; }
-  .view-header .vh-sub { font-size: 13px; color: var(--ink-soft); max-width: 480px; line-height: 1.5; }
-  .view-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+  .view-header h1 { font-size: 23px; font-weight: 600; margin: 0 0 6px; }
+  .view-header .vh-sub { font-size: 13.5px; color: var(--ink-soft); max-width: 520px; line-height: 1.55; }
+  .view-tabs { display: inline-flex; border: 1px solid var(--rule); border-radius: var(--radius); overflow: hidden; background: var(--surface); }
   .vtab {
-    font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase;
-    font-weight: 600; padding: 8px 14px; border-radius: 20px; border: 1px solid var(--line); background: var(--card);
-    color: var(--ink-soft); cursor: pointer;
+    font-family: 'Inter', sans-serif; font-size: 12.5px; font-weight: 600;
+    padding: 8px 13px; border: none; border-left: 1px solid var(--rule); background: transparent;
+    color: var(--ink-soft); cursor: pointer; white-space: nowrap;
   }
-  .vtab.active { background: var(--ink); color: var(--bordo-light); border-color: var(--ink); }
-  .vtab .cnt { opacity: 0.7; margin-left: 4px; }
+  .vtab:first-child { border-left: none; }
+  .vtab:hover { background: var(--surface-sunk); }
+  .vtab.active { background: var(--ink); color: #fff; }
+  .vtab .cnt { font-family: 'JetBrains Mono', monospace; font-size: 11px; opacity: 0.65; margin-left: 6px; }
+  @media (max-width: 700px) { .view-tabs { flex-wrap: wrap; } }
 
-  /* ---------- Cards / forms ---------- */
+  /* ---------- Cards ---------- */
   .card {
-    background: var(--card); border: 1px solid var(--line); border-radius: 10px;
-    padding: 22px; box-shadow: var(--shadow); margin-bottom: 18px;
+    background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius);
+    padding: 0 20px 20px; box-shadow: var(--lift); margin-bottom: 16px;
   }
-  .card.locked { opacity: 0.72; }
-  .section-num { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .card.locked { background: var(--surface-sunk); }
+  .section-num {
+    display: flex; align-items: center; gap: 10px;
+    margin: 0 -20px 18px; padding: 13px 20px; border-bottom: 1px solid var(--rule-soft);
+  }
   .section-num .n {
-    font-family: 'Fraunces', serif; font-weight: 700; font-size: 14px; color: #fff;
-    background: var(--bordo); width: 26px; height: 26px; border-radius: 50%;
+    font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 11px; color: var(--ink-soft);
+    background: var(--surface-sunk); border: 1px solid var(--rule);
+    min-width: 22px; height: 22px; border-radius: 4px; padding: 0 5px;
     display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   }
-  .section-num h2 {
-    font-family: 'JetBrains Mono', monospace; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em;
-    color: var(--ink-soft); margin: 0;
-  }
+  .section-num h2 { font-size: 14px; font-weight: 600; margin: 0; letter-spacing: -0.01em; }
   .section-num .tag {
-    font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase;
-    padding: 3px 9px; border-radius: 10px; margin-left: auto; font-weight: 700;
+    font-family: 'JetBrains Mono', monospace; font-size: 9.5px; letter-spacing: 0.07em; text-transform: uppercase;
+    padding: 4px 8px; border-radius: 4px; margin-left: auto; font-weight: 700; white-space: nowrap;
   }
   .tag-sensivel { background: var(--danger-bg); color: var(--danger); }
   .tag-basico { background: var(--info-bg); color: var(--info); }
 
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
-  .grid.cols3 { grid-template-columns: 1fr 1fr 1fr; }
-  @media (max-width: 600px) { .grid, .grid.cols3 { grid-template-columns: 1fr; } }
-  .field { display: flex; flex-direction: column; gap: 5px; }
+  /* ---------- Fields ---------- */
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .grid.cols3 { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 640px) { .grid, .grid.cols3 { grid-template-columns: 1fr; } }
+  .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
   .field.span2 { grid-column: span 2; }
-  @media (max-width: 600px) { .field.span2 { grid-column: span 1; } }
-  .field label { font-size: 12px; font-weight: 600; color: var(--ink-soft); }
+  @media (max-width: 640px) { .field.span2 { grid-column: span 1; } }
+  .field label {
+    font-size: 11px; font-weight: 600; color: var(--ink-soft);
+    letter-spacing: 0.05em; text-transform: uppercase;
+  }
   .field label .req { color: var(--danger); }
   .field input, .field select, .field textarea {
-    font-family: 'Inter', sans-serif; font-size: 14px;
-    padding: 9px 11px; border: 1px solid var(--line); border-radius: 7px;
-    background: var(--paper); color: var(--ink);
+    font-family: 'Inter', sans-serif; font-size: 14px; width: 100%;
+    padding: 9px 11px; border: 1px solid var(--rule); border-radius: var(--radius);
+    background: var(--surface); color: var(--ink);
   }
-  .field textarea { resize: vertical; min-height: 64px; font-family: 'Inter', sans-serif; }
-  .field input:focus, .field select:focus, .field textarea:focus { outline: 2px solid var(--bordo); outline-offset: 1px; }
+  .field textarea { resize: vertical; min-height: 70px; }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    outline: none; border-color: var(--bordo); box-shadow: 0 0 0 3px var(--bordo-wash);
+  }
   .field input.invalid, .field select.invalid { border-color: var(--danger); background: var(--danger-bg); }
-  .field input:disabled, .field select:disabled, .field input:read-only { background: #F1EDE4; color: var(--ink-soft); }
-
-  .checks { display: flex; flex-direction: column; gap: 8px; }
-  .check-row { display: flex; align-items: center; gap: 9px; font-size: 13px; padding: 6px 8px; border-radius: 6px; cursor: pointer; }
-  .check-row:hover { background: var(--bordo-wash); }
-  .check-row input { width: 16px; height: 16px; accent-color: var(--bordo); cursor: pointer; }
-
-  .actions { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
-
-  .hint { font-size: 12px; color: var(--ink-faint); margin-top: 10px; line-height: 1.5; }
-
-  /* ---------- Status pill ---------- */
-  .status-pill {
-    font-family: 'JetBrains Mono', monospace; font-size: 10.5px; font-weight: 700; letter-spacing: 0.05em;
-    text-transform: uppercase; padding: 5px 11px; border-radius: 20px; white-space: nowrap;
+  .field input:disabled, .field select:disabled, .field textarea:disabled {
+    background: var(--surface-sunk); color: var(--ink-soft); cursor: not-allowed;
   }
-  .status-rascunho { background: var(--line); color: var(--ink-soft); }
+
+  .checks { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+  @media (max-width: 640px) { .checks { grid-template-columns: 1fr; } }
+  .check-row {
+    display: flex; align-items: center; gap: 10px; font-size: 13.5px;
+    padding: 8px 10px; border-radius: 4px; cursor: pointer;
+  }
+  .check-row:hover { background: var(--surface-sunk); }
+  .check-row input { width: 16px; height: 16px; accent-color: var(--bordo); cursor: pointer; flex-shrink: 0; }
+  .check-row.static { cursor: default; color: var(--ink-soft); }
+  .check-row.static:hover { background: none; }
+  .check-row .mark {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700;
+    padding: 2px 7px; border-radius: 3px; margin-left: auto;
+    background: var(--surface-sunk); color: var(--ink-faint); border: 1px solid var(--rule);
+  }
+  .check-row .mark.ok { background: var(--ok-bg); color: var(--ok); border-color: transparent; }
+
+  .actions { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; align-items: center; }
+  .actions .spacer { margin-left: auto; }
+  .hint { font-size: 12.5px; color: var(--ink-faint); margin-top: 12px; line-height: 1.55; }
+
+  /* Avisos em bloco */
+  .callout {
+    display: flex; gap: 10px; align-items: flex-start;
+    font-size: 13px; line-height: 1.55; color: var(--ink);
+    border: 1px solid var(--rule); border-left: 3px solid var(--ink-faint);
+    background: var(--surface-sunk); border-radius: 4px; padding: 11px 13px; margin-bottom: 16px;
+  }
+  .callout .icon { margin-top: 2px; color: var(--ink-soft); }
+  .callout-warn { border-left-color: var(--warn); background: var(--warn-bg); border-color: transparent; }
+  .callout-warn .icon { color: var(--warn); }
+  .callout-action { border-left-color: var(--bordo); background: var(--bordo-wash); border-color: transparent; }
+  .callout-action .icon { color: var(--bordo); }
+
+  /* ---------- Status ---------- */
+  .status-pill {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
+    text-transform: uppercase; padding: 5px 9px; border-radius: 4px; white-space: nowrap;
+  }
+  .status-rascunho { background: var(--surface-sunk); color: var(--ink-soft); box-shadow: inset 0 0 0 1px var(--rule); }
   .status-aguardando_dp { background: var(--info-bg); color: var(--info); }
   .status-aguardando_seguranca { background: var(--warn-bg); color: var(--warn); }
   .status-aguardando_dp_revisao { background: var(--violet-bg); color: var(--violet); }
   .status-concluido { background: var(--ok-bg); color: var(--ok); }
 
-  /* ---------- List items ---------- */
-  .rec-list { display: flex; flex-direction: column; gap: 10px; }
+  /* ---------- Lists ---------- */
+  .rec-list { display: flex; flex-direction: column; }
+  .rec-list .rec-item + .rec-item { border-top: none; }
   .rec-item {
-    background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--bordo-light);
-    border-radius: 8px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center;
-    gap: 12px; cursor: pointer; transition: border-color 0.15s ease;
+    background: var(--surface); border: 1px solid var(--rule);
+    padding: 13px 16px; display: flex; justify-content: space-between; align-items: center;
+    gap: 14px; cursor: pointer; transition: background 0.12s ease;
+    margin-top: -1px;
   }
-  .rec-item:hover { border-left-color: var(--bordo); }
-  .rec-item-name { font-weight: 700; font-size: 14.5px; word-break: break-word; }
-  .rec-item-meta { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-faint); margin-top: 3px; }
-  .rec-item-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+  .rec-item:first-child { border-radius: var(--radius) var(--radius) 0 0; margin-top: 0; }
+  .rec-item:last-child { border-radius: 0 0 var(--radius) var(--radius); }
+  .rec-item:only-child { border-radius: var(--radius); }
+  .rec-item:hover { background: var(--surface-sunk); position: relative; z-index: 1; }
+  .rec-item-name { font-weight: 600; font-size: 14.5px; word-break: break-word; }
+  .rec-item-meta { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-faint); margin-top: 4px; }
+  .rec-item-right { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+  @media (max-width: 620px) { .rec-item { flex-direction: column; align-items: flex-start; } .rec-item-right { width: 100%; justify-content: space-between; } }
 
-  /* ---------- Upload de documentos por item ---------- */
-  .doc-list { display: flex; flex-direction: column; gap: 12px; }
-  .doc-card {
-    border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; background: var(--paper);
-  }
-  .doc-card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-  .doc-card-title { font-weight: 700; font-size: 14px; color: var(--ink); }
+  /* ---------- Documentos ---------- */
+  .doc-list { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 760px) { .doc-list { grid-template-columns: 1fr; } }
+  .doc-card { border: 1px solid var(--rule); border-radius: var(--radius); padding: 13px 14px; background: var(--surface); }
+  .doc-card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .doc-card-title { font-weight: 600; font-size: 13.5px; color: var(--ink); }
   .doc-count {
-    font-family: 'JetBrains Mono', monospace; font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em;
-    padding: 3px 9px; border-radius: 20px; background: var(--line); color: var(--ink-soft); white-space: nowrap;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700;
+    padding: 3px 7px; border-radius: 3px; background: var(--surface-sunk); color: var(--ink-faint);
+    border: 1px solid var(--rule); white-space: nowrap;
   }
-  .doc-count.ok { background: var(--ok-bg); color: var(--ok); }
-  /* dropzone estilizado escondendo o input nativo */
+  .doc-count.ok { background: var(--ok-bg); color: var(--ok); border-color: transparent; }
   .uploader { position: relative; margin-top: 10px; }
   .uploader input[type=file] { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
   .uploader-box {
     display: flex; align-items: center; justify-content: center; gap: 8px;
-    border: 1px dashed var(--bordo-light); border-radius: 8px; padding: 10px 12px;
-    font-size: 13px; font-weight: 600; color: var(--bordo-dark); background: var(--bordo-wash);
-    transition: border-color 0.15s ease, background 0.15s ease;
+    border: 1px dashed var(--bordo-edge); border-radius: 4px; padding: 9px 12px;
+    font-size: 12.5px; font-weight: 600; color: var(--bordo); background: var(--bordo-wash);
+    transition: border-color 0.12s ease;
   }
   .uploader:hover .uploader-box { border-color: var(--bordo); }
-  .doc-files { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+  .doc-files { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
   .doc-file {
-    display: flex; align-items: center; justify-content: space-between; gap: 12px;
-    border: 1px solid var(--line); border-radius: 8px; padding: 9px 12px; background: var(--card);
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    border: 1px solid var(--rule-soft); border-radius: 4px; padding: 7px 9px; background: var(--surface-sunk);
   }
   .doc-file-info { display: flex; align-items: center; gap: 10px; min-width: 0; }
-  .doc-file-name { font-size: 13.5px; font-weight: 600; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .doc-thumb {
-    width: 38px; height: 38px; border-radius: 6px; object-fit: cover; flex-shrink: 0;
-    border: 1px solid var(--line); background: var(--paper);
-  }
+  .doc-file-name { font-size: 13px; font-weight: 500; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .doc-file-acts { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
+  .doc-thumb { width: 34px; height: 34px; border-radius: 3px; object-fit: cover; flex-shrink: 0; border: 1px solid var(--rule); background: var(--surface); }
   .doc-thumb-file {
-    display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 6px;
-    flex-shrink: 0; border: 1px solid var(--line); background: var(--paper);
-    font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 700; color: var(--ink-soft);
+    display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 3px;
+    flex-shrink: 0; border: 1px solid var(--rule); background: var(--surface);
+    font-family: 'JetBrains Mono', monospace; font-size: 8.5px; font-weight: 700; color: var(--ink-faint);
   }
+  .btn-icon {
+    border: none; background: transparent; color: var(--ink-faint); cursor: pointer;
+    padding: 5px; border-radius: 4px; display: inline-flex; align-items: center;
+  }
+  .btn-icon:hover { background: var(--surface); color: var(--ink); }
+  .btn-icon.danger:hover { background: var(--danger-bg); color: var(--danger); }
   .btn-remove {
-    border: none; background: transparent; color: var(--danger); font-weight: 600; font-size: 13px;
-    cursor: pointer; padding: 4px 8px; border-radius: 6px; flex-shrink: 0;
+    border: none; background: transparent; color: var(--danger); font-weight: 600; font-size: 12.5px;
+    cursor: pointer; padding: 4px 8px; border-radius: 4px; flex-shrink: 0;
   }
   .btn-remove:hover { background: var(--danger-bg); }
 
-  /* ---------- Detail view ---------- */
+  /* ---------- Detail ---------- */
   .detail-back {
     background: none; border: none; color: var(--ink-soft); font-size: 13px; cursor: pointer;
-    display: inline-flex; align-items: center; gap: 6px; margin-bottom: 16px; font-weight: 600;
+    display: inline-flex; align-items: center; gap: 7px; margin-bottom: 18px; font-weight: 600; padding: 0;
   }
-  .detail-back:hover { color: var(--bordo-dark); }
-  .detail-title-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; flex-wrap: wrap; margin-bottom: 18px; }
-  .detail-title-row h1 { font-family: 'Fraunces', serif; font-size: 25px; margin: 0 0 6px; }
+  .detail-back:hover { color: var(--bordo); }
+  .detail-title-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; }
+  .detail-title-row h1 { font-size: 23px; font-weight: 600; margin: 0 0 6px; }
   .detail-proto { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--ink-faint); }
 
-  .history-list { display: flex; flex-direction: column; gap: 8px; }
-  .history-item { font-size: 12.5px; color: var(--ink-soft); display: flex; gap: 8px; padding: 8px 10px; background: var(--paper); border-radius: 6px; }
-  .history-item .hi-dot { color: var(--bordo); flex-shrink: 0; }
+  .history-list { display: flex; flex-direction: column; }
+  .history-item {
+    font-size: 13px; color: var(--ink-soft); display: flex; gap: 10px; align-items: baseline;
+    padding: 9px 0; border-top: 1px solid var(--rule-soft);
+  }
+  .history-item:first-child { border-top: none; }
+  .history-item .hi-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--bordo-edge); flex-shrink: 0; font-size: 0; color: transparent; }
+  .history-item b { color: var(--ink); font-weight: 600; }
 
-  .readonly-row { display: flex; border-bottom: 1px dashed var(--line); padding: 7px 0; font-size: 13px; }
-  .readonly-row .rl { width: 200px; flex-shrink: 0; color: var(--ink-soft); }
-  .readonly-row .rv { font-weight: 600; }
-  @media (max-width: 560px) { .readonly-row { flex-direction: column; gap: 2px; } .readonly-row .rl { width: auto; } }
+  .readonly-row { display: flex; gap: 16px; border-bottom: 1px solid var(--rule-soft); padding: 9px 0; font-size: 13.5px; }
+  .readonly-row:last-child { border-bottom: none; }
+  .readonly-row .rl { width: 210px; flex-shrink: 0; color: var(--ink-soft); }
+  .readonly-row .rv { font-weight: 500; word-break: break-word; }
+  @media (max-width: 560px) { .readonly-row { flex-direction: column; gap: 3px; } .readonly-row .rl { width: auto; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; } }
 
   .locked-note {
-    font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-faint); text-transform: uppercase;
-    letter-spacing: 0.06em; margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+    font-size: 12.5px; color: var(--ink-soft); font-weight: 500;
+    margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+    background: var(--surface-sunk); border: 1px solid var(--rule); border-radius: 4px; padding: 9px 12px;
   }
-  .locked-note::before { content: '🔒'; font-size: 12px; }
+  .locked-note::before {
+    content: ''; width: 14px; height: 14px; flex-shrink: 0;
+    background-color: var(--ink-soft);
+    -webkit-mask: no-repeat center / contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Crect x='4' y='11' width='16' height='10' rx='2'/%3E%3Cpath d='M8 11V7a4 4 0 0 1 8 0v4'/%3E%3C/svg%3E");
+    mask: no-repeat center / contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Crect x='4' y='11' width='16' height='10' rx='2'/%3E%3Cpath d='M8 11V7a4 4 0 0 1 8 0v4'/%3E%3C/svg%3E");
+  }
 
   /* ---------- Toast ---------- */
   .toast {
-    position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%);
-    background: var(--ink); color: var(--bordo-light);
-    padding: 11px 20px; border-radius: 8px; font-size: 13px; border: 1px solid var(--bordo);
-    font-family: 'Inter', sans-serif; font-weight: 500;
-    opacity: 0; pointer-events: none; transition: opacity 0.25s ease, transform 0.25s ease; z-index: 200;
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(8px);
+    background: var(--ink); color: #fff;
+    padding: 12px 18px; border-radius: var(--radius); font-size: 13.5px; font-weight: 500;
+    max-width: calc(100vw - 32px); text-align: center;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.28);
+    opacity: 0; pointer-events: none; transition: opacity 0.2s ease, transform 0.2s ease; z-index: 200;
   }
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(-4px); }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
   .hidden { display: none !important; }
 </style>
@@ -360,9 +459,17 @@
       <span class="sub">Sistema de Admissão</span>
     </div>
     <div class="topbar-right">
+      <select class="mesa-switch hidden" id="mesaSwitch" onchange="adminTrocarMesa(this.value)" title="Mesa em que você está trabalhando">
+        <option value="">Nenhuma mesa</option>
+        <option value="rh">Mesa do RH</option>
+        <option value="dp">Mesa do DP</option>
+        <option value="seguranca">Mesa da Segurança</option>
+      </select>
       <span class="role-badge hidden" id="roleBadge"></span>
-      <button class="btn-exit hidden" id="btnExit" onclick="fazerLogout()">Sair</button>
-      <button class="btn-exit" id="btnEntrar" onclick="abrirLogin()">Entrar</button>
+      <button class="btn-exit hidden" id="btnExit" onclick="fazerLogout()">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M15 17l5-5-5-5"/><path d="M20 12H9"/><path d="M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3"/></svg>Sair</button>
+      <button class="btn-exit" id="btnEntrar" onclick="abrirLogin()">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/></svg>Entrar</button>
     </div>
   </div>
 
@@ -371,30 +478,53 @@
       <!-- ============ HOME ============ -->
       <div id="screenHome">
         <div class="home-hero">
-          <div class="eyebrow">Fluxo de admissão · RH → DP → SESMT</div>
-          <h1>Onde você trabalha na admissão?</h1>
-          <p>Escolha seu setor para preencher, enviar ou revisar os dados dos funcionários. Cada perfil só acessa o que é permitido para sua etapa.</p>
+          <div class="eyebrow">Aluminas Móveis</div>
+          <h1>Admissão de funcionários</h1>
+          <p>A ficha passa por três mesas: o RH levanta os dados pessoais, o DP fecha contrato e conferência, a Segurança do Trabalho registra o exame. Cada mesa só enxerga o que precisa.</p>
         </div>
 
-        <div class="role-grid">
-          <div class="role-card" onclick="abrirLogin()">
-            <h3>RH</h3>
-            <span class="rc-arrow">→</span>
+        <div class="home-cols">
+          <div class="card">
+            <div class="section-num"><div class="n">
+              <svg class="icon" style="width:13px;height:13px;" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+            </div><h2>Entrar</h2></div>
+            <p style="font-size:13.5px;color:var(--ink-soft);line-height:1.6;margin:0 0 18px;">
+              Use o e-mail e a senha que o DP cadastrou para você. O sistema abre direto na mesa do seu setor. Nenhum dado de funcionário aparece antes do login.
+            </p>
+            <button class="btn btn-primary" onclick="abrirLogin()">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/></svg>
+              Entrar no sistema
+            </button>
+            <div class="hint">É o funcionário e recebeu um link para confirmar seus dados? Abra o link que o RH enviou — ele não pede senha, só o seu CPF.</div>
           </div>
-          <div class="role-card" onclick="abrirLogin()">
-            <h3>DP</h3>
-            <span class="rc-arrow">→</span>
-          </div>
-          <div class="role-card" onclick="abrirLogin()">
-            <h3>SESMT</h3>
-            <span class="rc-arrow">→</span>
-          </div>
-        </div>
 
-        <div class="overview-card">
-          <h2>Acesso ao sistema</h2>
-          <div class="ov-sub">Faça login com o e-mail e senha cadastrados pelo DP para ver os dados do seu setor. Nenhum dado é exibido antes do login.</div>
-          <button class="btn btn-primary" onclick="abrirLogin()">Entrar no sistema</button>
+          <div class="card">
+            <div class="section-num"><div class="n">
+              <svg class="icon" style="width:13px;height:13px;" viewBox="0 0 24 24"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h10"/></svg>
+            </div><h2>Como a ficha anda</h2></div>
+            <div class="flow">
+              <div class="flow-step">
+                <div class="flow-mark"><div class="flow-num">1</div><div class="flow-tail"></div></div>
+                <div class="flow-body"><div class="flow-desk">RH</div><div class="flow-what">Abre a ficha, gera o link e confere os dados pessoais.</div></div>
+              </div>
+              <div class="flow-step">
+                <div class="flow-mark"><div class="flow-num">2</div><div class="flow-tail"></div></div>
+                <div class="flow-body"><div class="flow-desk">Funcionário</div><div class="flow-what">Confirma os dados e anexa os documentos pelo link.</div></div>
+              </div>
+              <div class="flow-step">
+                <div class="flow-mark"><div class="flow-num">3</div><div class="flow-tail"></div></div>
+                <div class="flow-body"><div class="flow-desk">DP</div><div class="flow-what">Registra contrato, salário, dados bancários e conferência.</div></div>
+              </div>
+              <div class="flow-step">
+                <div class="flow-mark"><div class="flow-num">4</div><div class="flow-tail"></div></div>
+                <div class="flow-body"><div class="flow-desk">Segurança do Trabalho</div><div class="flow-what">Lança o ASO e as restrições, e devolve ao DP.</div></div>
+              </div>
+              <div class="flow-step">
+                <div class="flow-mark"><div class="flow-num">5</div><div class="flow-tail"></div></div>
+                <div class="flow-body"><div class="flow-desk">DP</div><div class="flow-what">Revisa tudo e conclui a admissão.</div></div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -426,6 +556,8 @@
   const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   const ROLE_LABEL = { rh: 'RH', dp: 'DP', seguranca: 'Técnico de Segurança' };
+  const MESA_LABEL = { rh: 'mesa do RH', dp: 'mesa do DP', seguranca: 'mesa da Segurança' };
+  let homeOriginalHTML = null;   // a home e reescrita para o admin; guarda o original
 
   const STATUS = {
     RASCUNHO: 'rascunho',
@@ -451,15 +583,49 @@
   // ============================================================
   // UTIL
   // ============================================================
-  function esc(s) { return (s || '').toString().replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function esc(s) {
+    if (s === null || s === undefined) return '';
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  // Icones em traco SVG. Nenhum emoji na interface.
+  const ICO = (() => {
+    const w = d => `<svg class="icon" viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
+    return {
+      voltar:   w('<path d="M15 18l-6-6 6-6"/>'),
+      avancar:  w('<path d="M9 6l6 6-6 6"/>'),
+      mais:     w('<path d="M12 5v14"/><path d="M5 12h14"/>'),
+      check:    w('<path d="M20 6L9 17l-5-5"/>'),
+      baixar:   w('<path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/>'),
+      lixo:     w('<path d="M4 7h16"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M6 7l1 13h10l1-13"/><path d="M9 7V4h6v3"/>'),
+      acessos:  w('<circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/>'),
+      lista:    w('<path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h10"/>'),
+      historico:w('<path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 8v4l3 2"/>'),
+      link:     w('<path d="M10 13a5 5 0 0 0 7 0l2-2a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-2 2a5 5 0 0 0 7 7l1-1"/>'),
+      devolver: w('<path d="M9 14l-5-5 5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-4"/>'),
+      salvar:   w('<path d="M5 4h11l4 4v12H5z"/><path d="M8 4v5h7"/><path d="M8 20v-6h8v6"/>'),
+      alerta:   w('<path d="M12 4l9 16H3z"/><path d="M12 10v4"/><path d="M12 17.5v.5"/>'),
+      info:     w('<circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8v.5"/>'),
+      cadeado:  w('<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>'),
+      anexo:    w('<path d="M20 11l-8.5 8.5a4.5 4.5 0 0 1-6.4-6.4L13 4.8a3 3 0 0 1 4.2 4.2l-8 8a1.5 1.5 0 0 1-2.1-2.1L15 7"/>')
+    };
+  })();
+
   function uid(prefix) { return prefix + '-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2,5).toUpperCase(); }
   function fmtDate(d) {
     if (!d) return '—';
-    const parts = d.split('-');
-    if (parts.length !== 3) return d;
+    const iso = String(d).slice(0, 10);
+    const parts = iso.split('-');
+    if (parts.length !== 3) return String(d);
     return `${parts[2]}/${parts[1]}/${parts[0]}`;
   }
-  function todayISO() { return new Date().toISOString().slice(0,10); }
+  // Data local (America/Sao_Paulo), nao UTC: depois das 21h o toISOString()
+  // ja virava o dia seguinte e gravava a data errada.
+  function todayISO() {
+    const d = new Date();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${d.getFullYear()}-${mm}-${dd}`;
+  }
   function nowLabel() { return new Date().toLocaleString('pt-BR'); }
   function toast(msg) {
     const t = document.getElementById('toast');
@@ -487,6 +653,28 @@
   // ============================================================
   function getRecord(id) { return records.find(r => r.id === id); }
 
+  // Garante que todo registro tenha os blocos como objeto/array.
+  // Sem isso, um bloco jsonb nulo no banco derrubava a tela inteira
+  // (TypeError em rec.rh.nome, rec.dp_basico.cargo, etc.).
+  function bloco(v) { return (v && typeof v === 'object' && !Array.isArray(v)) ? v : {}; }
+  function normalizarRegistro(r) {
+    if (!r || typeof r !== 'object') return null;
+    r.rh = bloco(r.rh);
+    r.dp = bloco(r.dp);
+    r.seguranca = bloco(r.seguranca);
+    r.rh_basico = bloco(r.rh_basico);
+    r.dp_basico = bloco(r.dp_basico);
+    r.historico = Array.isArray(r.historico) ? r.historico : [];
+    // Se a RPC do papel devolver 'rh'/'dp' em vez de '..._basico', aproveita.
+    if (!Object.keys(r.rh_basico).length) r.rh_basico = r.rh;
+    if (!Object.keys(r.dp_basico).length) r.dp_basico = r.dp;
+    return r;
+  }
+  function normalizarLista(data) {
+    if (!Array.isArray(data)) return [];
+    return data.map(normalizarRegistro).filter(Boolean);
+  }
+
   async function chamarRPC(nome, params, opts) {
     const { data, error } = await supabase.rpc(nome, params || {});
     if (error) {
@@ -498,22 +686,71 @@
   }
 
   async function carregarRegistrosDoPapel() {
-    if (currentRole === 'rh') {
-      const r = await chamarRPC('rpc_rh_listar');
-      records = r.ok ? r.data : [];
-    } else if (currentRole === 'dp') {
-      const r = await chamarRPC('rpc_dp_listar');
-      records = r.ok ? r.data : [];
-    } else if (currentRole === 'seguranca') {
-      const r = await chamarRPC('rpc_seguranca_listar');
-      records = r.ok ? r.data : [];
-    }
+    let r = null;
+    if (currentRole === 'rh') r = await chamarRPC('rpc_rh_listar');
+    else if (currentRole === 'dp') r = await chamarRPC('rpc_dp_listar');
+    else if (currentRole === 'seguranca') r = await chamarRPC('rpc_seguranca_listar');
+    // r.data pode vir null quando a funcao nao retorna linhas; sem esse
+    // guarda o records virava null e todo records.filter(...) estourava.
+    records = (r && r.ok) ? normalizarLista(r.data) : [];
   }
 
   // ============================================================
   // LOGIN / NAVEGAÇÃO
   // ============================================================
+  // Tela do admin que ainda nao escolheu mesa.
+  function renderEscolhaDeMesa() {
+    const home = document.getElementById('screenHome');
+    if (homeOriginalHTML === null) homeOriginalHTML = home.innerHTML;
+    home.classList.remove('hidden');
+    home.innerHTML = `
+      <div class="home-hero">
+        <div class="eyebrow">Administrador</div>
+        <h1>Escolha a mesa</h1>
+        <p>Você trabalha em uma mesa por vez, com as mesmas regras de quem senta nela. Enquanto nenhuma estiver escolhida, nenhuma ficha aparece. A troca fica registrada.</p>
+      </div>
+      <div class="home-cols">
+        <div class="card">
+          <div class="section-num"><div class="n">${ICO.lista}</div><h2>Mesas</h2></div>
+          <div class="actions" style="margin-top:0;flex-direction:column;align-items:stretch;">
+            <button class="btn btn-ghost btn-block" onclick="adminTrocarMesa('rh')">${ICO.avancar}Mesa do RH — dados pessoais</button>
+            <button class="btn btn-ghost btn-block" onclick="adminTrocarMesa('dp')">${ICO.avancar}Mesa do DP — contrato e conferência</button>
+            <button class="btn btn-ghost btn-block" onclick="adminTrocarMesa('seguranca')">${ICO.avancar}Mesa da Segurança — exame ocupacional</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="section-num"><div class="n">${ICO.acessos}</div><h2>Acessos</h2></div>
+          <p style="font-size:13.5px;color:var(--ink-soft);line-height:1.6;margin:0 0 16px;">
+            Cadastrar pessoas, trocar papel e resetar senha não dependem de mesa — você faz isso a qualquer momento.
+          </p>
+          <button class="btn btn-primary" onclick="adminIrParaAcessos()">${ICO.acessos}Gestão de acessos</button>
+        </div>
+      </div>`;
+  }
+
+  window.adminTrocarMesa = async function(mesa) {
+    const r = await chamarRPC('rpc_admin_assumir_mesa', { p_papel: mesa || null });
+    if (!r.ok) return;
+    records = [];
+    await carregarSessaoAtual();
+    toast(mesa ? 'Você está na ' + MESA_LABEL[mesa] + '.' : 'Você saiu de todas as mesas.');
+  };
+
+  window.adminIrParaAcessos = async function() {
+    const r = await chamarRPC('rpc_admin_assumir_mesa', { p_papel: 'dp' });
+    if (!r.ok) return;
+    await carregarSessaoAtual();
+    dpAbrirUsuarios();
+  };
+
   window.abrirLogin = function() {
+    // Home tem 4 botoes chamando esta funcao. Sem essa guarda, dois cliques
+    // criavam dois overlays com IDs repetidos e o login lia o campo errado.
+    if (document.getElementById('loginOverlay')) {
+      const jaAberto = document.getElementById('loginEmail');
+      if (jaAberto) jaAberto.focus();
+      return;
+    }
     const overlay = document.createElement('div');
     overlay.className = 'modal-overlay';
     overlay.id = 'loginOverlay';
@@ -575,7 +812,7 @@
     const { data: sessao } = await supabase.auth.getSession();
     if (!sessao || !sessao.session) { irParaHome(); return; }
 
-    const perfil = await chamarRPC('meu_perfil');
+    const perfil = await chamarRPC('rpc_meu_contexto');
     const linha = perfil.ok && perfil.data && perfil.data[0];
     if (!linha || !linha.papel) {
       toast('Sua conta não tem um perfil configurado. Peça para o DP te cadastrar.');
@@ -583,19 +820,39 @@
       irParaHome();
       return;
     }
-    currentUser = { papel: linha.papel, nome: linha.nome };
+    // papel  = mesa em que a pessoa esta agora (para o admin, a assumida)
+    // papel_real = o papel de verdade, que diz se ela pode trocar de mesa
+    currentUser = { papel: linha.papel, nome: linha.nome, papelReal: linha.papel_real || linha.papel };
     await entrarNoPapel(linha.papel);
   }
 
   async function entrarNoPapel(role) {
     currentRole = role;
+
+    const ehAdmin = currentUser.papelReal === 'admin';
+    const sw = document.getElementById('mesaSwitch');
+    sw.classList.toggle('hidden', !ehAdmin);
+    if (ehAdmin) sw.value = (role === 'admin') ? '' : role;
+
+    // Admin sem mesa assumida nao ve ficha nenhuma: precisa escolher.
+    if (role === 'admin') {
+      document.getElementById('btnExit').classList.remove('hidden');
+      document.getElementById('btnEntrar').classList.add('hidden');
+      document.getElementById('roleBadge').textContent = 'Administrador · ' + currentUser.nome;
+      document.getElementById('roleBadge').classList.remove('hidden');
+      ['screenRH','screenDP','screenSeguranca','screenPortal'].forEach(id => document.getElementById(id).classList.add('hidden'));
+      renderEscolhaDeMesa();
+      return;
+    }
+
     await carregarRegistrosDoPapel();
     document.getElementById('screenHome').classList.add('hidden');
-    document.getElementById('roleBadge').textContent = ROLE_LABEL[role] + ' · ' + currentUser.nome;
+    document.getElementById('roleBadge').textContent =
+      (ehAdmin ? 'Admin · ' + MESA_LABEL[role] : ROLE_LABEL[role]) + ' · ' + currentUser.nome;
     document.getElementById('roleBadge').classList.remove('hidden');
     document.getElementById('btnExit').classList.remove('hidden');
     document.getElementById('btnEntrar').classList.add('hidden');
-    ['screenRH','screenDP','screenSeguranca'].forEach(id => document.getElementById(id).classList.add('hidden'));
+    ['screenRH','screenDP','screenSeguranca','screenPortal'].forEach(id => document.getElementById(id).classList.add('hidden'));
     if (role === 'rh') { document.getElementById('screenRH').classList.remove('hidden'); renderRH(); }
     if (role === 'dp') { document.getElementById('screenDP').classList.remove('hidden'); renderDP(); }
     if (role === 'seguranca') { document.getElementById('screenSeguranca').classList.remove('hidden'); renderSeguranca(); }
@@ -608,7 +865,13 @@
     document.getElementById('roleBadge').classList.add('hidden');
     document.getElementById('btnExit').classList.add('hidden');
     document.getElementById('btnEntrar').classList.remove('hidden');
-    ['screenRH','screenDP','screenSeguranca'].forEach(id => document.getElementById(id).classList.add('hidden'));
+    ['screenRH','screenDP','screenSeguranca','screenPortal'].forEach(id => document.getElementById(id).classList.add('hidden'));
+    // Se a home tinha virado a tela de escolha de mesa, devolve a original.
+    if (homeOriginalHTML !== null) {
+      document.getElementById('screenHome').innerHTML = homeOriginalHTML;
+      homeOriginalHTML = null;
+    }
+    document.getElementById('mesaSwitch').classList.add('hidden');
     document.getElementById('screenHome').classList.remove('hidden');
   }
   window.goHome = irParaHome;
@@ -616,16 +879,39 @@
   // ============================================================
   // STEPPER (visual signature element)
   // ============================================================
+  // As quatro passagens de mesa. A ordem carrega informacao real:
+  // e o caminho que o papel percorre ate a admissao fechar.
+  const ETAPAS = [
+    { mesa: 'RH',                     tarefa: 'Dados pessoais' },
+    { mesa: 'DP',                     tarefa: 'Contrato e conferência' },
+    { mesa: 'Segurança do Trabalho',  tarefa: 'Exame ocupacional' },
+    { mesa: 'DP',                     tarefa: 'Revisão e fechamento' }
+  ];
+
+  // Faixa detalhada, para as telas de ficha.
+  function bandHTML(status) {
+    const idx = STEP_INDEX[status];
+    const pos = (idx === undefined || idx === null) ? 0 : idx;
+    return '<div class="band">' + ETAPAS.map((e, i) => {
+      const cls = i < pos ? 'done' : (i === pos ? 'current' : '');
+      return `<div class="band-cell ${cls}">
+        <div class="band-desk">${esc(e.mesa)}</div>
+        <div class="band-state">${esc(e.tarefa)}</div>
+      </div>`;
+    }).join('') + '</div>';
+  }
+
+  // Pontos compactos, para as linhas de lista.
   function stepperHTML(status) {
     const idx = STEP_INDEX[status];
-    let html = '<div class="stepper">';
+    const pos = (idx === undefined || idx === null) ? 0 : idx;
+    let html = '<div class="stepper" title="' + esc(STATUS_LABEL[status] || '') + '">';
     STEP_LABELS.forEach((label, i) => {
-      const cls = i < idx ? 'done' : (i === idx ? 'current' : '');
-      html += `<div class="step-dot ${cls}" title="${label}">${i < idx ? '✓' : label}</div>`;
-      if (i < STEP_LABELS.length - 1) html += `<div class="step-line ${i < idx ? 'done' : ''}"></div>`;
+      const cls = i < pos ? 'done' : (i === pos ? 'current' : '');
+      html += `<span class="step-dot ${cls}"></span>`;
+      if (i < STEP_LABELS.length - 1) html += `<span class="step-line ${i < pos ? 'done' : ''}"></span>`;
     });
-    html += '</div>';
-    return html;
+    return html + '</div>';
   }
 
   // ============================================================
@@ -637,11 +923,12 @@
 
     if (view === 'form') {
   const rec = recId ? getRecord(recId) : null;
-  const locked = rec && rec.status !== STATUS.RASCUNHO;
+  const locked = !!(rec && rec.status !== STATUS.RASCUNHO);
+    rhFormLocked = locked;
   // Detecta se o próprio funcionário já preencheu pelo portal.
   const funcPreencheu = !!(rec && rec.rh && rec.rh.atualizadoPeloFuncionario);
   el.innerHTML = `
-        <button class="detail-back" onclick="renderRH('lista')">← Voltar para a lista</button>
+        <button class="detail-back" onclick="renderRH('lista')">${ICO.voltar}Voltar para a lista</button>
         <div class="view-header">
           <div>
             <h1>${rec ? 'Ficha de ' + esc(rec.rh.nome) : 'Nova ficha · Dados pessoais'}</h1>
@@ -650,7 +937,8 @@
           ${rec ? `<span class="status-pill status-${rec.status}">${STATUS_LABEL[rec.status]}</span>` : ''}
         </div>
 
-        ${locked ? '<div class="locked-note">Ficha já enviada — campos bloqueados</div>' : ''}
+        ${rec ? bandHTML(rec.status) : ''}
+        ${locked ? '<div class="locked-note">Ficha já encaminhada — os campos desta mesa estão bloqueados</div>' : ''}
 
         <div class="card">
           <div class="section-num"><div class="n">1</div><h2>Dados pessoais</h2></div>
@@ -709,6 +997,10 @@
         <div class="card">
           <div class="section-num"><div class="n">2</div><h2>Dados contratuais</h2><span class="tag tag-basico">Opcional</span></div>
           <div class="vh-sub" style="margin-bottom:12px;">Se já souber, adiante estes dados. Não é obrigatório — o DP pode completar depois. O funcionário não vê estas informações.</div>
+          ${rec ? `
+            <div class="callout hidden" id="rhDpCarregando">${ICO.info}<span>Buscando o que o DP já preencheu. Os campos abrem em um instante — assim nada do que você digitar é sobrescrito.</span></div>
+            <div class="callout callout-warn hidden" id="rhDpErro">${ICO.alerta}<span>Não consegui ler o que o DP já tem nesta ficha. Você pode preencher normalmente, mas os campos que deixar em branco não serão alterados.</span></div>
+          ` : ''}
           <div class="grid">
             <div class="field span2"><label>Empresa onde será registrado</label>
               <input id="fc-empresa" type="text" placeholder="Razão social" ${locked ? 'disabled' : ''} /></div>
@@ -750,8 +1042,13 @@
         ${rec ? `
         <div class="card">
           <div class="section-num"><div class="n">4</div><h2>Documentos enviados pelo funcionário</h2><span class="tag tag-basico">Portal</span></div>
-          <div class="vh-sub" style="margin-bottom:12px;">Arquivos que o próprio candidato anexou pelo link do portal.</div>
-          <div class="rec-list" id="rhUploadDocs"><div class="empty-state">Carregando anexos...</div></div>
+          <div class="vh-sub" style="margin-bottom:14px;">O candidato anexa pelo link do portal. Se ele trouxe cópias em mãos ou mandou por outro caminho, anexe você mesmo aqui.</div>
+          <div id="rhUploadDocs"><div class="empty-state">Carregando anexos...</div></div>
+        </div>
+
+        <div class="card">
+          <div class="section-num"><div class="n">5</div><h2>Conferência do DP</h2><span class="tag tag-basico">Somente leitura</span></div>
+          <div id="rhChecklist"><div class="empty-state">Carregando conferência...</div></div>
         </div>` : ''}
 
         <div class="card">
@@ -766,18 +1063,20 @@
             </div>
           </div>
           ${rec && !locked && funcPreencheu ? `
-            <div class="locked-note" style="border-left-color:var(--bordo);background:var(--card-2, rgba(122,26,26,0.06));color:var(--ink);margin-bottom:14px;">
-              O funcionário já preencheu os dados dele. Revise e, quando estiver tudo certo, envie para o DP.
-            </div>` : ''}
+            <div class="callout callout-action">${ICO.check}<span>O funcionário já preencheu os dados dele pelo portal. Revise e encaminhe ao DP.</span></div>` : ''}
           <div class="actions">
             ${!locked ? `
-              ${rec ? `<button class="btn btn-ghost" onclick="rhCopiarLink('${rec.id}')">Copiar link do funcionário</button>` : ''}
-              <button class="btn btn-primary" onclick="rhSaveDraft('${rec ? rec.id : ''}')">Salvar rascunho</button>
-              ${rec && funcPreencheu ? `<button class="btn btn-primary" onclick="rhSendToDP('${rec.id}')">Enviar para o DP →</button>` : ''}
-            ` : `<button class="btn btn-ghost" disabled>Ficha já enviada para o DP</button>`}
+              <button class="btn btn-ghost" onclick="rhSaveDraft('${rec ? rec.id : ''}')">${ICO.salvar}Salvar rascunho</button>
+              ${rec ? `<button class="btn btn-ghost" onclick="rhCopiarLink('${rec.id}')">${ICO.link}Copiar link do funcionário</button>` : ''}
+              ${rec ? `<button class="btn btn-primary" onclick="rhSendToDP('${rec.id}')">${ICO.avancar}Enviar para o DP</button>` : ''}
+              ${rec ? `<button class="btn btn-danger spacer" onclick="rhCancelar('${rec.id}')">${ICO.lixo}Cancelar ficha</button>` : ''}
+            ` : `
+              <button class="btn btn-ghost" onclick="rhCopiarLink('${rec.id}')">${ICO.link}Copiar link do funcionário</button>
+            `}
           </div>
-          ${rec && !locked && !funcPreencheu ? '<div class="vh-sub" style="margin-top:10px;">Salve o rascunho, gere o link e envie ao funcionário. Assim que ele confirmar o CPF e preencher os dados, o botão de enviar para o DP aparece aqui. Ele não vê cargo nem salário.</div>' : ''}
-          ${!rec ? '<div class="vh-sub" style="margin-top:10px;">Salve o rascunho para gerar o link do funcionário. O envio para o DP fica disponível depois que ele preencher os dados.</div>' : ''}
+          ${rec && !locked && !funcPreencheu ? '<div class="hint">O funcionário ainda não abriu o link. Você pode esperar, ou preencher no lugar dele e encaminhar assim mesmo — o sistema vai pedir confirmação.</div>' : ''}
+          ${!rec ? '<div class="hint">Salve o rascunho para gerar o link do funcionário.</div>' : ''}
+          ${locked ? '<div class="hint">A ficha já saiu da sua mesa. Se algum dado pessoal estiver errado, peça ao DP para devolver a ficha para o RH.</div>' : ''}
         </div>
 
         ${rec ? historyCardHTML(rec) : ''}
@@ -792,34 +1091,38 @@
         document.getElementById('f-email').value = rec.rh.email || '';
         document.getElementById('f-estadoCivil').value = rec.rh.estadoCivil || '';
         document.getElementById('f-dependentes').value = rec.rh.dependentes || '';
-        document.getElementById('f-numDependentes').value = rec.rh.numDependentes || '';
+        document.getElementById('f-numDependentes').value = (rec.rh.numDependentes ?? '');
         document.getElementById('f-menoridade').value = rec.rh.menoridade || '';
         document.getElementById('f-preenchidoPor').value = rec.rh.preenchidoPor || currentUser.nome;
         document.getElementById('f-dataPreenchimento').value = rec.rh.dataPreenchimento || todayISO();
         carregarDpNoRH(rec.id);
-        carregarDocsFuncionario(rec.id, 'rhUploadDocs');
+        carregarDocsFuncionario(rec.id, 'rhUploadDocs', !locked);
       } else {
         document.getElementById('f-dataPreenchimento').value = todayISO();
         document.getElementById('f-preenchidoPor').value = currentUser.nome;
+        // Ficha nova: nao ha nada no DP para ler, os campos nascem livres.
+        rhDpToken++;
+        dpSnapshotRH = {};
+        dpCarregadoNoRH = true;
       }
       return;
     }
 
     // ---- lista ----
-    const meus = records.filter(r => true); // RH acompanha todas as fichas que já passaram por ele
+    const meus = records; // RH acompanha todas as fichas que já passaram por ele
     el.innerHTML = `
       <div class="view-header">
         <div>
           <h1>RH · Admissões</h1>
           <div class="vh-sub">Cadastre os dados pessoais de um novo candidato ou acompanhe as fichas já enviadas.</div>
         </div>
-        <button class="btn btn-primary" onclick="renderRH('form')">+ Nova ficha</button>
+        <button class="btn btn-primary" onclick="renderRH('form')">${ICO.mais}Nova ficha</button>
       </div>
       <div class="rec-list" id="rhList"></div>
     `;
     const listEl = document.getElementById('rhList');
     if (meus.length === 0) {
-      listEl.innerHTML = '<div class="empty-state">Nenhuma ficha cadastrada ainda. Clique em "Nova ficha" para começar.</div>';
+      listEl.innerHTML = '<div class="empty-state">Nenhuma ficha aberta. Clique em <b>Nova ficha</b> para cadastrar os dados de um candidato e gerar o link dele.</div>';
       return;
     }
     listEl.innerHTML = meus.map(r => `
@@ -836,18 +1139,51 @@
   }
   window.renderRH = renderRH;
 
-  function collectRHFields() {
-    return {
+  // Recebe o registro atual para PRESERVAR as marcas do portal. Antes,
+  // salvar o rascunho depois que o funcionario preenchia sobrescrevia o
+  // bloco rh sem 'atualizadoPeloFuncionario' e o botao "Enviar para o DP"
+  // desaparecia sem explicacao.
+  function collectRHFields(recAtual) {
+    const dados = {
       nome: val('f-nome'), cpf: val('f-cpf'), rg: val('f-rg'), nascimento: val('f-nascimento'),
       telefone: val('f-telefone'), email: val('f-email'), estadoCivil: val('f-estadoCivil'),
       dependentes: val('f-dependentes'), numDependentes: val('f-numDependentes'), menoridade: val('f-menoridade'),
       preenchidoPor: val('f-preenchidoPor'), dataPreenchimento: val('f-dataPreenchimento') || todayISO()
     };
+    const antes = (recAtual && recAtual.rh) || {};
+    if (antes.atualizadoPeloFuncionario) dados.atualizadoPeloFuncionario = true;
+    if (antes.atualizadoEm) dados.atualizadoEm = antes.atualizadoEm;
+    return dados;
   }
 
   // Contratuais + bancários (opcionais) que o RH pode adiantar.
   // Inclui SOMENTE campos preenchidos, para nunca sobrescrever com
   // vazio o que o DP/funcionário já tenha informado.
+  // Os quinze campos que o RH divide com o DP: id na tela -> chave no banco.
+  const CAMPOS_DP_NO_RH = [
+    ['fc-empresa','empresa'], ['fc-cargo','cargo'], ['fc-departamento','departamento'],
+    ['fc-tipoContrato','tipoContrato'], ['fc-salario','salario'], ['fc-salarioObs','salarioObs'],
+    ['fc-admissao','admissao'], ['fb-pis','pis'], ['fb-banco','banco'],
+    ['fb-tipoConta','tipoConta'], ['fb-agencia','agencia'], ['fb-conta','conta'],
+    ['fb-temPix','temPix'], ['fb-tipoPix','tipoPix'], ['fb-chavePix','chavePix']
+  ];
+
+  let dpSnapshotRH = {};        // valores que vieram do banco na ultima carga
+  let dpCarregadoNoRH = false;  // a leitura chegou a completar?
+  let rhDpToken = 0;            // invalida resposta de ficha ja fechada
+  let rhFormLocked = false;     // a ficha esta bloqueada para o RH?
+
+  // Enquanto a leitura nao volta, os campos ficam travados. Assim o
+  // RH nao consegue digitar num campo que esta prestes a ser reescrito.
+  function travarCamposDpNoRH(travado) {
+    CAMPOS_DP_NO_RH.forEach(([id]) => {
+      const e = document.getElementById(id);
+      if (e) e.disabled = travado || rhFormLocked;
+    });
+    const aviso = document.getElementById('rhDpCarregando');
+    if (aviso) aviso.classList.toggle('hidden', !travado);
+  }
+
   function collectRHDpFields() {
     const pares = {
       empresa: val('fc-empresa'), cargo: val('fc-cargo'), departamento: val('fc-departamento'),
@@ -858,20 +1194,78 @@
       tipoPix: val('fb-tipoPix'), chavePix: val('fb-chavePix')
     };
     const out = {};
-    Object.keys(pares).forEach(k => { if (pares[k] !== '' && pares[k] != null) out[k] = pares[k]; });
+
+    // Se a leitura do DP falhou, nao da para saber o que mudou. Manda
+    // so o que estiver preenchido: pode adiantar dado, nunca apagar.
+    if (!dpCarregadoNoRH) {
+      Object.keys(pares).forEach(k => {
+        const v = pares[k] == null ? '' : String(pares[k]);
+        if (v !== '') out[k] = v;
+      });
+      return out;
+    }
+
+    // Caso normal: envia apenas o que o RH realmente mexeu. Campo que
+    // ele esvaziou vai como string vazia (antes era descartado e nunca
+    // limpava); campo intocado nao vai, e assim nunca apaga o DP.
+    Object.keys(pares).forEach(k => {
+      const antes = dpSnapshotRH[k] == null ? '' : String(dpSnapshotRH[k]);
+      const agora = pares[k] == null ? '' : String(pares[k]);
+      if (agora !== antes) out[k] = agora;
+    });
     return out;
   }
 
   async function carregarDpNoRH(recId) {
+    const token = ++rhDpToken;
+    dpCarregadoNoRH = false;
+    dpSnapshotRH = {};
+    travarCamposDpNoRH(true);
+
     const r = await chamarRPC('rpc_rh_ler_dp', { p_id: recId }, { silent: true });
-    const dp = (r.ok && r.data && typeof r.data === 'object') ? r.data : {};
-    const set = (id, v) => { const e = document.getElementById(id); if (e) e.value = v || ''; };
-    set('fc-empresa', dp.empresa); set('fc-cargo', dp.cargo); set('fc-departamento', dp.departamento);
-    set('fc-tipoContrato', dp.tipoContrato); set('fc-salario', dp.salario); set('fc-salarioObs', dp.salarioObs);
-    set('fc-admissao', dp.admissao);
-    set('fb-pis', dp.pis); set('fb-banco', dp.banco); set('fb-tipoConta', dp.tipoConta);
-    set('fb-agencia', dp.agencia); set('fb-conta', dp.conta); set('fb-temPix', dp.temPix);
-    set('fb-tipoPix', dp.tipoPix); set('fb-chavePix', dp.chavePix);
+
+    // Ficha trocada ou fechada no meio do caminho: descarta a resposta
+    // velha em vez de escrever no formulario que esta na tela agora.
+    if (token !== rhDpToken) return;
+
+    if (!r.ok || !r.data || typeof r.data !== 'object') {
+      // Sem leitura confiavel, libera a digitacao mas nao arrisca
+      // apagar nada do DP: collectRHDpFields so manda o que for preenchido.
+      travarCamposDpNoRH(false);
+      const aviso = document.getElementById('rhDpErro');
+      if (aviso) aviso.classList.remove('hidden');
+      renderChecklistNoRH(null);
+      return;
+    }
+
+    const dp = r.data;
+    CAMPOS_DP_NO_RH.forEach(([id, chave]) => {
+      dpSnapshotRH[chave] = dp[chave];
+      const e = document.getElementById(id);
+      if (e) e.value = (dp[chave] ?? '');
+    });
+
+    dpCarregadoNoRH = true;
+    travarCamposDpNoRH(false);
+    renderChecklistNoRH(dp.documentos);
+  }
+
+  // O RH nao marca a conferencia (e do DP), mas precisa enxergar
+  // o que ja foi aceito para saber o que ainda falta cobrar.
+  function renderChecklistNoRH(flags) {
+    const box = document.getElementById('rhChecklist');
+    if (!box) return;
+    const f = (flags && typeof flags === 'object') ? flags : {};
+    const marcados = DOC_ITENS.filter((it, i) => f['doc' + (i + 1)]).length;
+    box.innerHTML = `
+      <div class="hint" style="margin:0 0 12px;">Conferência feita pelo DP · ${marcados} de ${DOC_ITENS.length} aceitos</div>
+      <div class="checks">
+        ${DOC_ITENS.map((it, i) => {
+          const ok = !!f['doc' + (i + 1)];
+          return `<div class="check-row static">${esc(it.label)}
+            <span class="mark ${ok ? 'ok' : ''}">${ok ? 'aceito' : 'pendente'}</span></div>`;
+        }).join('')}
+      </div>`;
   }
 
   // Salva o bloco dp (contratuais/bancários) do RH, se houver algo preenchido.
@@ -888,7 +1282,7 @@
       toast('Preencha ao menos o nome para salvar o rascunho.');
       return;
     }
-    const rhData = collectRHFields();
+    const rhData = collectRHFields(recId ? getRecord(recId) : null);
     let novoId = recId;
     if (!recId) {
       const r = await chamarRPC('rpc_rh_criar', { p_rh: rhData });
@@ -904,6 +1298,19 @@
     renderRH('form', novoId);
   };
 
+  window.rhCancelar = async function(recId) {
+    const rec = getRecord(recId);
+    if (!rec) return;
+    const nome = (rec.rh && rec.rh.nome) || 'esta ficha';
+    if (!confirm('Cancelar a ficha de ' + nome + '?\n\n' +
+      'Ela sai da lista e o link do funcionário para de funcionar. Use isso para ficha aberta por engano ou duplicada.')) return;
+    const r = await chamarRPC('rpc_rh_cancelar', { p_id: recId, p_por: val('f-preenchidoPor') || currentUser.nome });
+    if (!r.ok) return;
+    await carregarRegistrosDoPapel();
+    toast('Ficha cancelada.');
+    renderRH('lista');
+  };
+
   window.rhCopiarLink = async function(recId) {
     const r = await chamarRPC('rpc_rh_gerar_link', { p_id: recId });
     if (!r.ok || !r.data) return;
@@ -917,6 +1324,16 @@
   };
 
   window.rhSendToDP = async function(recId) {
+    // O portal e o caminho preferido, nao um bloqueio: candidato sem
+    // acesso, sem responder ou sem celular nao pode travar a admissao.
+    const recAtual = recId ? getRecord(recId) : null;
+    const preencheu = !!(recAtual && recAtual.rh && recAtual.rh.atualizadoPeloFuncionario);
+    if (!preencheu) {
+      const ok = confirm('O funcionário ainda não confirmou os dados pelo portal.\n\n' +
+        'Ao encaminhar agora, você assume que conferiu os dados pessoais e os documentos. ' +
+        'Depois do envio a ficha fica bloqueada para o RH.\n\nEncaminhar mesmo assim?');
+      if (!ok) return;
+    }
     const required = [
       ['f-nome'],['f-cpf'],['f-rg'],['f-nascimento'],['f-telefone'],
       ['f-estadoCivil'],['f-dependentes'],['f-menoridade']
@@ -932,7 +1349,7 @@
       toast('Informe quem está preenchendo, para o histórico.');
       return;
     }
-    const rhData = collectRHFields();
+    const rhData = collectRHFields(recId ? getRecord(recId) : null);
     let idAlvo = recId;
     if (!idAlvo) {
       const r = await chamarRPC('rpc_rh_criar', { p_rh: rhData });
@@ -952,6 +1369,7 @@
   // ============================================================
   let dpFilter = 'aguardando_dp';
   let dpView = 'admissoes'; // 'admissoes' | 'usuarios'
+  let dpUsuariosCache = [];
 
   // Gestão de acessos via funções SQL (RPC). Toda a segurança
   // (só o DP pode gerenciar) é validada dentro das funções no banco.
@@ -994,7 +1412,7 @@
       const seg = rec.seguranca || {};
 
       el.innerHTML = `
-        <button class="detail-back" onclick="renderDP('lista')">← Voltar para a lista</button>
+        <button class="detail-back" onclick="renderDP('lista')">${ICO.voltar}Voltar para a lista</button>
         <div class="detail-title-row">
           <div>
             <h1>${esc(rec.rh.nome)}</h1>
@@ -1002,9 +1420,9 @@
           </div>
           <span class="status-pill status-${rec.status}">${STATUS_LABEL[rec.status]}</span>
         </div>
-        ${stepperHTML(rec.status)}
+        ${bandHTML(rec.status)}
 
-        <div class="card" style="margin-top:18px;">
+        <div class="card">
           <div class="section-num"><div class="n">1</div><h2>Dados pessoais</h2><span class="tag tag-basico">RH · leitura</span></div>
           <div class="readonly-row"><div class="rl">Nome completo</div><div class="rv">${esc(rec.rh.nome)}</div></div>
           <div class="readonly-row"><div class="rl">CPF</div><div class="rv">${esc(rec.rh.cpf)}</div></div>
@@ -1059,8 +1477,8 @@
 
         <div class="card">
           <div class="section-num"><div class="n">4</div><h2>Documentos enviados pelo funcionário</h2><span class="tag tag-basico">Portal</span></div>
-          <div class="vh-sub" style="margin-bottom:12px;">Arquivos que o próprio candidato anexou pelo link do portal.</div>
-          <div class="rec-list" id="dpUploadDocs"><div class="empty-state">Carregando anexos...</div></div>
+          <div class="vh-sub" style="margin-bottom:14px;">Anexado pelo funcionário no portal ou pelas mesas. Você também pode anexar o que faltar.</div>
+          <div id="dpUploadDocs"><div class="empty-state">Carregando anexos...</div></div>
         </div>
 
         <div class="card ${dpLocked ? 'locked' : ''}">
@@ -1101,13 +1519,15 @@
           </div>
           <div class="actions">
             ${!dpLocked ? `
-              <button class="btn btn-ghost" onclick="dpSaveDraft('${rec.id}')">Salvar</button>
-              <button class="btn btn-primary" onclick="dpSendToSeguranca('${rec.id}')">Enviar para Segurança →</button>
+              <button class="btn btn-ghost" onclick="dpSaveDraft('${rec.id}')">${ICO.salvar}Salvar</button>
+              <button class="btn btn-primary" onclick="dpSendToSeguranca('${rec.id}')">${ICO.avancar}Enviar para a Segurança</button>
             ` : ''}
-            ${canFinalize ? `<button class="btn btn-dark" onclick="dpFinalize('${rec.id}')">Marcar admissão como concluída ✓</button>` : ''}
+            ${canFinalize ? `<button class="btn btn-dark" onclick="dpFinalize('${rec.id}')">${ICO.check}Concluir admissão</button>` : ''}
             ${rec.status === STATUS.CONCLUIDO ? `<button class="btn btn-ghost" disabled>Admissão concluída</button>` : ''}
             ${rec.status === STATUS.AGUARDANDO_SEGURANCA ? `<button class="btn btn-ghost" disabled>Aguardando o técnico de segurança</button>` : ''}
+            ${rec.status !== STATUS.CONCLUIDO ? `<button class="btn btn-ghost spacer" onclick="dpDevolverRH('${rec.id}')">${ICO.devolver}Devolver ao RH</button>` : ''}
           </div>
+          ${rec.status !== STATUS.CONCLUIDO ? '<div class="hint">Devolver ao RH reabre a ficha como rascunho para corrigir dado pessoal errado — CPF, nome ou data de nascimento. O que você já preencheu aqui continua salvo.</div>' : ''}
         </div>
 
         ${historyCardHTML(rec)}
@@ -1135,7 +1555,7 @@
       });
       document.getElementById('d-preenchidoPor').value = dp.preenchidoPor || currentUser.nome;
       document.getElementById('d-dataPreenchimento').value = dp.dataPreenchimento || todayISO();
-      carregarDocsFuncionario(rec.id);
+      carregarDocsFuncionario(rec.id, 'dpUploadDocs', !dpLocked);
       return;
     }
 
@@ -1156,7 +1576,7 @@
           <div class="vh-sub">Você vê todos os dados de todas as fichas, incluindo os sensíveis. Preencha contratuais/bancários e encaminhe entre setores.</div>
         </div>
         <div style="display:flex;flex-direction:column;gap:10px;align-items:flex-end;">
-          <button class="btn btn-ghost btn-sm" onclick="dpAbrirUsuarios()">⚙ Gestão de acessos</button>
+          <button class="btn btn-ghost btn-sm" onclick="dpAbrirUsuarios()">${ICO.acessos}Gestão de acessos</button>
           <div class="view-tabs" id="dpTabs"></div>
         </div>
       </div>
@@ -1169,7 +1589,7 @@
 
     const listEl = document.getElementById('dpList');
     if (filtered.length === 0) {
-      listEl.innerHTML = '<div class="empty-state">Nenhuma ficha nesse status.</div>';
+      listEl.innerHTML = '<div class="empty-state">Nenhuma ficha neste filtro. Troque a aba acima para ver as fichas em outra etapa.</div>';
       return;
     }
     listEl.innerHTML = filtered.map(r => `
@@ -1200,11 +1620,11 @@
           <h1>DP · Gestão de acessos</h1>
           <div class="vh-sub">Crie e gerencie quem pode entrar no RH, no DP e na Segurança do Trabalho.</div>
         </div>
-        <button class="btn btn-ghost btn-sm" onclick="dpAbrirAdmissoes()">← Voltar para admissões</button>
+        <button class="btn btn-ghost btn-sm" onclick="dpAbrirAdmissoes()">${ICO.voltar}Voltar para admissões</button>
       </div>
 
       <div class="card">
-        <div class="section-num"><div class="n">+</div><h2>Novo acesso</h2></div>
+        <div class="section-num"><div class="n">${ICO.mais}</div><h2>Novo acesso</h2></div>
         <div class="grid cols3">
           <div class="field"><label>Nome</label><input id="u-nome" type="text" placeholder="Nome da pessoa" /></div>
           <div class="field"><label>E-mail</label><input id="u-email" type="email" placeholder="pessoa@aluminas.com.br" /></div>
@@ -1222,17 +1642,18 @@
       </div>
 
       <div class="card">
-        <div class="section-num"><div class="n">☰</div><h2>Acessos existentes</h2></div>
+        <div class="section-num"><div class="n">${ICO.lista}</div><h2>Acessos existentes</h2></div>
         <div class="rec-list" id="usuariosList"><div class="empty-state">Carregando...</div></div>
       </div>
     `;
 
     const r = await chamarFuncaoAdmin('listar', {});
     const listEl = document.getElementById('usuariosList');
-    if (!r.ok) { listEl.innerHTML = '<div class="empty-state">Não foi possível carregar os acessos.</div>'; return; }
-    const usuarios = r.data || [];
-    if (usuarios.length === 0) { listEl.innerHTML = '<div class="empty-state">Nenhum acesso cadastrado ainda.</div>'; return; }
-    listEl.innerHTML = usuarios.map(u => `
+    if (!r.ok) { listEl.innerHTML = '<div class="empty-state">Não consegui carregar os acessos. Verifique a conexão e recarregue a página.</div>'; return; }
+    const usuarios = Array.isArray(r.data) ? r.data : [];
+    dpUsuariosCache = usuarios;
+    if (usuarios.length === 0) { listEl.innerHTML = '<div class="empty-state">Nenhum acesso cadastrado. Use o formulário acima para liberar a primeira pessoa.</div>'; return; }
+    listEl.innerHTML = usuarios.map((u, i) => `
       <div class="rec-item" style="cursor:default;">
         <div>
           <div class="rec-item-name">${esc(u.nome)}</div>
@@ -1245,7 +1666,7 @@
             <option value="seguranca" ${u.papel==='seguranca'?'selected':''}>Segurança</option>
           </select>
           <button class="btn btn-ghost btn-sm" onclick="dpResetarSenha('${u.user_id}')">Resetar senha</button>
-          <button class="btn btn-ghost btn-sm" onclick="dpExcluirUsuario('${u.user_id}','${esc(u.nome)}')">Excluir</button>
+          <button class="btn btn-ghost btn-sm" onclick="dpExcluirUsuario(${i})">Excluir</button>
         </div>
       </div>
     `).join('');
@@ -1264,7 +1685,8 @@
   window.dpMudarPapel = async function(userId, papel) {
     const r = await chamarFuncaoAdmin('papel', { user_id: userId, papel });
     if (r.ok) toast('Papel atualizado.');
-    else renderDPUsuarios();
+    // Recarrega sempre: em caso de erro, devolve o select ao valor real.
+    renderDPUsuarios();
   };
 
   window.dpResetarSenha = async function(userId) {
@@ -1275,9 +1697,11 @@
     if (r.ok) toast('Senha atualizada.');
   };
 
-  window.dpExcluirUsuario = async function(userId, nome) {
-    if (!confirm('Remover o acesso de ' + nome + '? Essa ação não pode ser desfeita.')) return;
-    const r = await chamarFuncaoAdmin('excluir', { user_id: userId });
+  window.dpExcluirUsuario = async function(i) {
+    const u = dpUsuariosCache[i];
+    if (!u) { toast('Acesso não encontrado, recarregue a lista.'); return; }
+    if (!confirm('Remover o acesso de ' + (u.nome || u.email) + '? Essa ação não pode ser desfeita.')) return;
+    const r = await chamarFuncaoAdmin('excluir', { user_id: u.user_id });
     if (r.ok) { toast('Acesso removido.'); renderDPUsuarios(); }
   };
 
@@ -1330,6 +1754,20 @@
     renderDP('lista');
   };
 
+  window.dpDevolverRH = async function(recId) {
+    const rec = getRecord(recId);
+    if (!rec) return;
+    const motivo = prompt('O que o RH precisa corrigir? Esse texto entra no histórico da ficha.');
+    if (motivo === null) return;
+    if (!motivo.trim()) { toast('Escreva o motivo para o RH saber o que corrigir.'); return; }
+    const por = val('d-preenchidoPor') || (rec.dp && rec.dp.preenchidoPor) || currentUser.nome;
+    const r = await chamarRPC('rpc_dp_devolver_rh', { p_id: recId, p_por: por, p_motivo: motivo.trim() });
+    if (!r.ok) return;
+    await carregarRegistrosDoPapel();
+    toast('Ficha devolvida ao RH.');
+    renderDP('lista');
+  };
+
   window.dpFinalize = async function(recId) {
     const rec = getRecord(recId);
     if (!rec) return;
@@ -1357,11 +1795,13 @@
       const seg = rec.seguranca || {};
 
       el.innerHTML = `
-        <button class="detail-back" onclick="renderSeguranca('lista')">← Voltar para a lista</button>
+        <button class="detail-back" onclick="renderSeguranca('lista')">${ICO.voltar}Voltar para a lista</button>
         <div class="detail-title-row">
           <div><h1>${esc(rec.rh_basico.nome)}</h1><div class="detail-proto">${rec.id}</div></div>
           <span class="status-pill status-${rec.status}">${STATUS_LABEL[rec.status]}</span>
         </div>
+
+        ${bandHTML(rec.status)}
 
         <div class="card">
           <div class="section-num"><div class="n">1</div><h2>Dados básicos</h2><span class="tag tag-basico">Visível para você</span></div>
@@ -1412,8 +1852,8 @@
           </div>
           <div class="actions">
             ${editable ? `
-              <button class="btn btn-ghost" onclick="segSaveDraft('${rec.id}')">Salvar</button>
-              <button class="btn btn-primary" onclick="segSendToDP('${rec.id}')">Devolver para o DP →</button>
+              <button class="btn btn-ghost" onclick="segSaveDraft('${rec.id}')">${ICO.salvar}Salvar</button>
+              <button class="btn btn-primary" onclick="segSendToDP('${rec.id}')">${ICO.avancar}Devolver para o DP</button>
             ` : `<button class="btn btn-ghost" disabled>Já devolvido para o DP</button>`}
           </div>
         </div>
@@ -1445,7 +1885,7 @@
     `;
     const listEl = document.getElementById('segList');
     if (visible.length === 0) {
-      listEl.innerHTML = '<div class="empty-state">Nenhuma ficha aguardando o setor de segurança no momento.</div>';
+      listEl.innerHTML = '<div class="empty-state">Nenhuma ficha aguardando exame no momento. Quando o DP encaminhar uma admissão, ela aparece aqui.</div>';
       return;
     }
     listEl.innerHTML = visible.map(r => `
@@ -1518,6 +1958,7 @@
     { key: 'casamento',    label: 'Certidão de casamento' },
   ];
   const MAX_POR_ITEM = 3;
+  const LIMITE_TOTAL_BYTES = 5 * 1024 * 1024;
 
   // ============================================================
   // PORTAL DO FUNCIONÁRIO — acesso por link (?portal=TOKEN) + CPF
@@ -1576,6 +2017,11 @@
     const r = await chamarRPC('rpc_portal_abrir', { p_token: portalToken, p_cpf: cpf });
     btn.disabled = false; btn.textContent = 'Acessar minha ficha';
     if (!r.ok) {
+      err.textContent = 'Não foi possível acessar. Verifique o CPF ou o link recebido.';
+      err.classList.add('show');
+      return;
+    }
+    if (!r.data || typeof r.data !== 'object') {
       err.textContent = 'Não foi possível acessar. Verifique o CPF ou o link recebido.';
       err.classList.add('show');
       return;
@@ -1698,7 +2144,7 @@
       ${editavel ? `
         <div class="card">
           <div class="actions">
-            <button class="btn btn-primary" id="portalBtnSalvar" onclick="portalSalvar()">Enviar meus dados →</button>
+            <button class="btn btn-primary" id="portalBtnSalvar" onclick="portalSalvar()">${ICO.check}Enviar meus dados</button>
           </div>
         </div>
       ` : ''}
@@ -1712,7 +2158,7 @@
     document.getElementById('p-email').value = rh.email || '';
     document.getElementById('p-estadoCivil').value = rh.estadoCivil || '';
     document.getElementById('p-dependentes').value = rh.dependentes || '';
-    document.getElementById('p-numDependentes').value = rh.numDependentes || '';
+    document.getElementById('p-numDependentes').value = (rh.numDependentes ?? '');
     document.getElementById('p-menoridade').value = rh.menoridade || '';
 
     const banc = portalData.bancarios || {};
@@ -1739,7 +2185,7 @@
   function docThumbHTML(d) {
     const tipo = (d.tipo || '').toLowerCase();
     if (tipo.startsWith('image/') && d.base64) {
-      return `<img class="doc-thumb" src="${d.base64}" alt="${esc(d.nome || 'anexo')}" />`;
+      return `<img class="doc-thumb" src="${esc(d.base64)}" alt="${esc(d.nome || 'anexo')}" />`;
     }
     const nome = d.nome || '';
     const ext = nome.includes('.') ? nome.split('.').pop().slice(0, 4).toUpperCase() : 'ARQ';
@@ -1779,7 +2225,7 @@
               <input type="file" multiple
                 accept=".pdf,.png,.jpg,.jpeg,.webp,image/*,application/pdf"
                 onchange="portalAddFiles('${it.key}', this)" />
-              <div class="uploader-box">+ Anexar arquivo (foto ou PDF)</div>
+              <div class="uploader-box">${ICO.anexo}Anexar arquivo</div>
             </div>` : ''}
           ${editavel && cheio ? `<div class="rec-item-meta" style="margin-top:8px;">Limite de ${MAX_POR_ITEM} arquivos atingido.</div>` : ''}
         </div>`;
@@ -1796,19 +2242,25 @@
     }
     let pendentes = files.length;
     if (!pendentes) { input.value = ''; return; }
+    // Finalizacao centralizada: antes, se um arquivo falhasse, 'pendentes'
+    // chegava a zero pelo onerror e a lista nunca era redesenhada.
+    const finalizar = () => {
+      pendentes--;
+      if (pendentes > 0) return;
+      input.value = '';
+      renderPortalDocs();
+      const total = tamanhoTotalDocs();
+      if (total > LIMITE_TOTAL_BYTES) toast('Os anexos passaram de 5 MB. Remova algum arquivo antes de enviar.');
+      else if (total > LIMITE_TOTAL_BYTES * 0.8) toast('Atenção: os anexos estão perto do limite de 5 MB.');
+    };
     files.forEach(file => {
       const reader = new FileReader();
       reader.onload = () => {
         if (!portalDocs[itemKey]) portalDocs[itemKey] = [];
         portalDocs[itemKey].push({ nome: file.name, tipo: file.type, tamanho: file.size, base64: reader.result });
-        pendentes--;
-        if (pendentes === 0) {
-          input.value = '';
-          renderPortalDocs();
-          if (tamanhoTotalDocs() > 5 * 1024 * 1024) toast('Atenção: os anexos estão perto do limite de 5 MB.');
-        }
+        finalizar();
       };
-      reader.onerror = () => { pendentes--; toast('Não consegui ler o arquivo ' + file.name); };
+      reader.onerror = () => { toast('Não consegui ler o arquivo ' + file.name); finalizar(); };
       reader.readAsDataURL(file);
     });
   };
@@ -1818,9 +2270,13 @@
     renderPortalDocs();
   };
 
+  // Soma o tamanho REAL dos arquivos. Antes somava o comprimento da string
+  // base64 (~37% maior), entao o "limite de 5 MB" na pratica cortava em ~3,6 MB.
   function tamanhoTotalDocs() {
     let total = 0;
-    Object.values(portalDocs).forEach(arr => (arr || []).forEach(d => { total += d.base64 ? d.base64.length : 0; }));
+    Object.values(portalDocs).forEach(arr => (arr || []).forEach(d => {
+      total += Number(d.tamanho) || (d.base64 ? Math.floor(d.base64.length * 0.75) : 0);
+    }));
     return total;
   }
 
@@ -1834,17 +2290,20 @@
     ].forEach(([id, rotulo]) => { if (!val(id)) faltando.push(rotulo); });
     DOC_ITENS.forEach(it => { if (!(portalDocs[it.key] || []).length) faltando.push('Documento: ' + it.label); });
 
-    if (tamanhoTotalDocs() > 5 * 1024 * 1024) {
+    if (tamanhoTotalDocs() > LIMITE_TOTAL_BYTES) {
       toast('Os anexos ultrapassam o limite de 5 MB. Remova alguns arquivos.');
       return;
     }
 
+    let avisoPendencias = '';
     if (faltando.length > 0) {
       const lista = faltando.slice(0, 6).join(', ') + (faltando.length > 6 ? '…' : '');
       const ok = confirm('Ainda faltam dados obrigatórios:\n\n' + faltando.join('\n') +
         '\n\nVocê pode salvar mesmo assim e completar depois. Deseja salvar agora?');
       if (!ok) return;
-      toast('Salvo. Lembre-se de completar: ' + lista);
+      // O aviso so sai DEPOIS que a RPC confirmar. Antes ele dizia "Salvo."
+      // antes de salvar e ainda aparecia junto com a mensagem de erro.
+      avisoPendencias = 'Salvo. Lembre-se de completar: ' + lista;
     }
 
     const rhData = {
@@ -1862,9 +2321,9 @@
     const r = await chamarRPC('rpc_portal_salvar', {
       p_token: portalToken, p_cpf: portalCpf, p_rh: rhData, p_bancarios: bancData, p_documentos: portalDocs
     });
-    btn.disabled = false; btn.textContent = 'Enviar meus dados →';
+    btn.disabled = false; btn.innerHTML = ICO.check + 'Enviar meus dados';
     if (!r.ok) return;
-    if (faltando.length === 0) toast('Dados enviados com sucesso! Obrigado.');
+    toast(avisoPendencias || 'Dados enviados com sucesso! Obrigado.');
     // Recarrega mantendo os dados atualizados
     const rr = await chamarRPC('rpc_portal_abrir', { p_token: portalToken, p_cpf: portalCpf });
     if (rr.ok) {
@@ -1878,50 +2337,145 @@
   // ANEXOS DO PORTAL (visão do DP/RH) — lista e baixa os arquivos
   // que o funcionário enviou pelo link do portal.
   // ============================================================
-  let dpDocsCache = [];
+  let staffDocs = {};        // { itemKey: [ {nome,tipo,tamanho,base64} ] }
+  let staffRecId = null;
+  let staffBoxId = 'dpUploadDocs';
+  let staffEditavel = false;
+  let staffSujo = false;     // ha anexo novo ainda nao gravado
 
-  async function carregarDocsFuncionario(recId, boxId) {
-    const box = document.getElementById(boxId || 'dpUploadDocs');
+  async function carregarDocsFuncionario(recId, boxId, editavel) {
+    staffRecId = recId;
+    staffBoxId = boxId || 'dpUploadDocs';
+    staffEditavel = !!editavel;
+    staffSujo = false;
+    const box = document.getElementById(staffBoxId);
     if (!box) return;
     const r = await chamarRPC('rpc_dp_documentos', { p_id: recId });
-    const obj = (r.ok && r.data && typeof r.data === 'object' && !Array.isArray(r.data)) ? r.data : {};
-    dpDocsCache = [];
-    const blocos = DOC_ITENS.map(it => {
-      const arquivos = Array.isArray(obj[it.key]) ? obj[it.key] : [];
-      const linhas = arquivos.map(d => {
-        const idx = dpDocsCache.push(d) - 1;
-        return `
-          <div class="rec-item">
-            <div>
-              <div class="rec-item-name">${esc(d.nome || 'arquivo')}</div>
-              <div class="rec-item-meta">${esc(fmtTamanho(d.tamanho))}</div>
-            </div>
-            <div class="rec-item-right">
-              <button class="btn btn-ghost" onclick="baixarDocFuncionario(${idx})">Baixar</button>
-            </div>
-          </div>`;
-      }).join('');
-      return `
-        <div class="doc-item" style="padding:12px 0;border-top:1px solid var(--line);">
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
-            <label style="font-weight:600;">${esc(it.label)}</label>
-            <span class="rec-item-meta">${arquivos.length} arquivo(s)</span>
-          </div>
-          <div class="rec-list" style="margin-top:8px;">${linhas || '<div class="empty-state" style="padding:8px 0;">Não enviado.</div>'}</div>
-        </div>`;
-    }).join('');
-    const total = dpDocsCache.length;
-    box.innerHTML = total === 0
-      ? '<div class="empty-state">O funcionário ainda não anexou documentos pelo portal.</div>'
-      : blocos;
+    staffDocs = normalizarDocs(r.ok ? r.data : null);
+    renderStaffDocs();
   }
 
-  window.baixarDocFuncionario = function(i) {
-    const d = dpDocsCache[i];
+  function renderStaffDocs() {
+    const box = document.getElementById(staffBoxId);
+    if (!box) return;
+    const total = Object.values(staffDocs).reduce((n, a) => n + (a || []).length, 0);
+    box.classList.remove('rec-list');
+
+    const grade = '<div class="doc-list">' + DOC_ITENS.map(it => {
+      const arquivos = staffDocs[it.key] || [];
+      const cheio = arquivos.length >= MAX_POR_ITEM;
+      const linhas = arquivos.length
+        ? '<div class="doc-files">' + arquivos.map((d, i) => `
+            <div class="doc-file">
+              <div class="doc-file-info">
+                ${docThumbHTML(d)}
+                <div style="min-width:0;">
+                  <div class="doc-file-name">${esc(d.nome || 'arquivo')}</div>
+                  <div class="rec-item-meta">${esc(fmtTamanho(d.tamanho))}</div>
+                </div>
+              </div>
+              <div class="doc-file-acts">
+                <button class="btn-icon" title="Baixar" onclick="baixarDocFuncionario('${it.key}',${i})">${ICO.baixar}</button>
+                ${staffEditavel ? `<button class="btn-icon danger" title="Remover" onclick="staffRemoveDoc('${it.key}',${i})">${ICO.lixo}</button>` : ''}
+              </div>
+            </div>`).join('') + '</div>'
+        : '<div class="rec-item-meta" style="margin-top:8px;">Nenhum arquivo.</div>';
+      return `
+        <div class="doc-card">
+          <div class="doc-card-head">
+            <span class="doc-card-title">${esc(it.label)}</span>
+            <span class="doc-count ${arquivos.length ? 'ok' : ''}">${arquivos.length}/${MAX_POR_ITEM}</span>
+          </div>
+          ${linhas}
+          ${staffEditavel && !cheio ? `
+            <div class="uploader">
+              <input type="file" multiple
+                accept=".pdf,.png,.jpg,.jpeg,.webp,image/*,application/pdf"
+                onchange="staffAddFiles('${it.key}', this)" />
+              <div class="uploader-box">${ICO.anexo}Anexar arquivo</div>
+            </div>` : ''}
+        </div>`;
+    }).join('') + '</div>';
+
+    const rodape = staffEditavel ? `
+      <div class="actions">
+        <button class="btn ${staffSujo ? 'btn-primary' : 'btn-ghost'}" id="staffBtnSalvarDocs" onclick="staffSalvarDocs()">
+          ${ICO.salvar}Salvar anexos
+        </button>
+        <span class="hint" style="margin:0;">${staffSujo
+          ? 'Há anexos ainda não gravados nesta ficha.'
+          : 'Anexos gravados.'}</span>
+      </div>` : '';
+
+    const vazio = total === 0 && !staffEditavel
+      ? '<div class="empty-state">Nenhum documento anexado até agora, nem pelo portal nem pelas mesas.</div>'
+      : '';
+
+    box.innerHTML = vazio || (grade + rodape);
+  }
+
+  window.staffAddFiles = function(itemKey, input) {
+    const atual = staffDocs[itemKey] || [];
+    const espaco = MAX_POR_ITEM - atual.length;
+    let files = Array.from(input.files || []);
+    if (files.length > espaco) {
+      toast(`Máximo de ${MAX_POR_ITEM} arquivos por item. Anexei os ${espaco} primeiros.`);
+      files = files.slice(0, espaco);
+    }
+    let pendentes = files.length;
+    if (!pendentes) { input.value = ''; return; }
+    const finalizar = () => {
+      pendentes--;
+      if (pendentes > 0) return;
+      input.value = '';
+      staffSujo = true;
+      renderStaffDocs();
+    };
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (!staffDocs[itemKey]) staffDocs[itemKey] = [];
+        staffDocs[itemKey].push({ nome: file.name, tipo: file.type, tamanho: file.size, base64: reader.result });
+        finalizar();
+      };
+      reader.onerror = () => { toast('Não consegui ler o arquivo ' + file.name); finalizar(); };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  window.staffRemoveDoc = function(itemKey, i) {
+    if (!staffEditavel) return;
+    if (staffDocs[itemKey]) staffDocs[itemKey].splice(i, 1);
+    staffSujo = true;
+    renderStaffDocs();
+  };
+
+  window.staffSalvarDocs = async function() {
+    if (!staffRecId) return;
+    let total = 0;
+    Object.values(staffDocs).forEach(arr => (arr || []).forEach(d => {
+      total += Number(d.tamanho) || (d.base64 ? Math.floor(d.base64.length * 0.75) : 0);
+    }));
+    if (total > LIMITE_TOTAL_BYTES) {
+      toast('Os anexos passam de 5 MB no total. Remova algum arquivo antes de salvar.');
+      return;
+    }
+    const btn = document.getElementById('staffBtnSalvarDocs');
+    if (btn) { btn.disabled = true; btn.textContent = 'Salvando...'; }
+    const r = await chamarRPC('rpc_staff_salvar_documentos', { p_id: staffRecId, p_documentos: staffDocs });
+    if (btn) { btn.disabled = false; }
+    if (!r.ok) { renderStaffDocs(); return; }
+    staffSujo = false;
+    renderStaffDocs();
+    toast('Anexos salvos.');
+  };
+
+  window.baixarDocFuncionario = function(itemKey, i) {
+    const d = (staffDocs[itemKey] || [])[i];
     if (!d || !d.base64) { toast('Arquivo indisponível.'); return; }
     const a = document.createElement('a');
     a.href = d.base64;
-    a.download = d.nome || ('documento-' + (i+1));
+    a.download = d.nome || ('documento-' + (i + 1));
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -1935,10 +2489,10 @@
     if (hist.length === 0) return '';
     return `
       <div class="card">
-        <div class="section-num"><div class="n">↻</div><h2>Histórico de encaminhamentos</h2></div>
+        <div class="section-num"><div class="n">${ICO.historico}</div><h2>Histórico de encaminhamentos</h2></div>
         <div class="history-list">
           ${hist.slice().reverse().map(h => `
-            <div class="history-item"><span class="hi-dot">●</span> ${h.quando} — <b>${esc(h.de)} → ${esc(h.para)}</b> por ${esc(h.por)}</div>
+            <div class="history-item"><span class="hi-dot"></span><span>${esc(h.quando)} · <b>${esc(h.de)} para ${esc(h.para)}</b> · por ${esc(h.por)}</span></div>
           `).join('')}
         </div>
       </div>
@@ -1950,9 +2504,9 @@
   // ============================================================
   (async function init() {
     // Link do funcionário: ?portal=TOKEN → abre o portal, sem login.
-    const portalToken = new URLSearchParams(location.search).get('portal');
-    if (portalToken) {
-      abrirPortal(portalToken);
+    const tokenDaURL = new URLSearchParams(location.search).get('portal');
+    if (tokenDaURL) {
+      abrirPortal(tokenDaURL);
       return;
     }
     const { data: sessao } = await supabase.auth.getSession();
