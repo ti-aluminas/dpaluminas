@@ -4,9 +4,10 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Aluminas · Sistema de Admissão</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" />
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap');
-
   /* ============================================================
      Aluminas · Sistema de Admissão
      Direção: livro de registro. Papel neutro frio, tipografia
@@ -445,6 +446,9 @@
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+  body.ocupado { cursor: progress; }
+  body.ocupado .btn, body.ocupado .btn-exit { pointer-events: none; opacity: 0.65; }
+
   .hidden { display: none !important; }
 </style>
 </head>
@@ -575,12 +579,12 @@
       salvar:   w('<path d="M5 4h11l4 4v12H5z"/><path d="M8 4v5h7"/><path d="M8 20v-6h8v6"/>'),
       alerta:   w('<path d="M12 4l9 16H3z"/><path d="M12 10v4"/><path d="M12 17.5v.5"/>'),
       info:     w('<circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8v.5"/>'),
-      cadeado:  w('<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>'),
       anexo:    w('<path d="M20 11l-8.5 8.5a4.5 4.5 0 0 1-6.4-6.4L13 4.8a3 3 0 0 1 4.2 4.2l-8 8a1.5 1.5 0 0 1-2.1-2.1L15 7"/>')
     };
   })();
 
-  function uid(prefix) { return prefix + '-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2,5).toUpperCase(); }
+  // Data local (America/Sao_Paulo), nao UTC: depois das 21h o toISOString()
+  // ja virava o dia seguinte e gravava a data errada.
   function fmtDate(d) {
     if (!d) return '—';
     const iso = String(d).slice(0, 10);
@@ -588,8 +592,8 @@
     if (parts.length !== 3) return String(d);
     return `${parts[2]}/${parts[1]}/${parts[0]}`;
   }
-  // Data local (America/Sao_Paulo), nao UTC: depois das 21h o toISOString()
-  // ja virava o dia seguinte e gravava a data errada.
+  // Data local (America/Sao_Paulo), nao UTC: depois das 21h o
+  // toISOString() ja virava o dia seguinte e gravava a data errada.
   function todayISO() {
     const d = new Date();
     const mm = String(d.getMonth() + 1).padStart(2, '0');
@@ -645,14 +649,40 @@
     return data.map(normalizarRegistro).filter(Boolean);
   }
 
+  // Chamadas de escrita em voo. Duas idênticas ao mesmo tempo são
+  // clique duplo, não intenção: a segunda é descartada. Sem isso,
+  // dois cliques em "Salvar rascunho" criavam duas fichas.
+  const escritasEmVoo = new Set();
+  const SO_LEITURA = /_listar$|_documentos$|_ler_|^meu_|^rpc_meu_/;
+
   async function chamarRPC(nome, params, opts) {
-    const { data, error } = await supabase.rpc(nome, params || {});
-    if (error) {
-      console.error(nome, error);
-      if (!(opts && opts.silent)) toast('Erro: ' + error.message);
-      return { ok: false, data: null };
+    const escrita = !SO_LEITURA.test(nome);
+    const chave = escrita ? nome + ':' + JSON.stringify(params || {}) : null;
+
+    if (chave) {
+      if (escritasEmVoo.has(chave)) return { ok: false, data: null, duplicada: true };
+      escritasEmVoo.add(chave);
+      document.body.classList.add('ocupado');
     }
-    return { ok: true, data };
+
+    try {
+      const { data, error } = await supabase.rpc(nome, params || {});
+      if (error) {
+        console.error(nome, error);
+        if (!(opts && opts.silent)) toast('Erro: ' + error.message);
+        return { ok: false, data: null };
+      }
+      return { ok: true, data };
+    } catch (e) {
+      console.error(nome, e);
+      if (!(opts && opts.silent)) toast('Falha de conexão. Verifique a internet e tente de novo.');
+      return { ok: false, data: null };
+    } finally {
+      if (chave) {
+        escritasEmVoo.delete(chave);
+        if (escritasEmVoo.size === 0) document.body.classList.remove('ocupado');
+      }
+    }
   }
 
   async function carregarRegistrosDoPapel() {
@@ -768,6 +798,18 @@
     await supabase.auth.signOut();
     irParaHome();
   };
+
+  function vigiarSessao() {
+    // O SDK vem de CDN: se a API mudar, a tela não pode morrer no init.
+    if (!supabase.auth || typeof supabase.auth.onAuthStateChange !== 'function') return;
+    supabase.auth.onAuthStateChange((evento) => {
+      if (evento === 'SIGNED_OUT' && currentRole) {
+        currentRole = null; records = [];
+        irParaHome();
+        toast('Sua sessão expirou. Entre novamente.');
+      }
+    });
+  }
 
   async function carregarSessaoAtual() {
     const { data: sessao } = await supabase.auth.getSession();
@@ -905,31 +947,31 @@
           <div class="section-num"><div class="n">1</div><h2>Dados pessoais</h2></div>
           <div class="grid">
             <div class="field span2">
-              <label>Nome completo <span class="req">*</span></label>
+              <label for="f-nome">Nome completo <span class="req">*</span></label>
               <input id="f-nome" type="text" placeholder="Nome civil completo" ${locked ? 'disabled' : ''} />
             </div>
             <div class="field">
-              <label>CPF <span class="req">*</span></label>
+              <label for="f-cpf">CPF <span class="req">*</span></label>
               <input id="f-cpf" type="text" placeholder="000.000.000-00" ${locked ? 'disabled' : ''} />
             </div>
             <div class="field">
-              <label>RG <span class="req">*</span></label>
+              <label for="f-rg">RG <span class="req">*</span></label>
               <input id="f-rg" type="text" placeholder="00.000.000-0" ${locked ? 'disabled' : ''} />
             </div>
             <div class="field">
-              <label>Data de nascimento <span class="req">*</span></label>
+              <label for="f-nascimento">Data de nascimento <span class="req">*</span></label>
               <input id="f-nascimento" type="date" ${locked ? 'disabled' : ''} />
             </div>
             <div class="field">
-              <label>Telefone <span class="req">*</span></label>
+              <label for="f-telefone">Telefone <span class="req">*</span></label>
               <input id="f-telefone" type="text" placeholder="(00) 00000-0000" ${locked ? 'disabled' : ''} />
             </div>
             <div class="field span2">
-              <label>E-mail</label>
+              <label for="f-email">E-mail</label>
               <input id="f-email" type="email" placeholder="nome@empresa.com" ${locked ? 'disabled' : ''} />
             </div>
             <div class="field">
-              <label>Estado civil <span class="req">*</span></label>
+              <label for="f-estadoCivil">Estado civil <span class="req">*</span></label>
               <select id="f-estadoCivil" ${locked ? 'disabled' : ''}>
                 <option value="">Selecione</option>
                 <option>Solteiro(a)</option><option>Casado(a)</option><option>Divorciado(a)</option>
@@ -937,17 +979,17 @@
               </select>
             </div>
             <div class="field">
-              <label>Há dependentes? <span class="req">*</span></label>
+              <label for="f-dependentes">Há dependentes? <span class="req">*</span></label>
               <select id="f-dependentes" ${locked ? 'disabled' : ''}>
                 <option value="">Selecione</option><option>Não</option><option>Sim</option>
               </select>
             </div>
             <div class="field">
-              <label>Quantos dependentes</label>
+              <label for="f-numDependentes">Quantos dependentes</label>
               <input id="f-numDependentes" type="number" min="0" placeholder="0" ${locked ? 'disabled' : ''} />
             </div>
             <div class="field">
-              <label>Menor de idade? <span class="req">*</span></label>
+              <label for="f-menoridade">Menor de idade? <span class="req">*</span></label>
               <select id="f-menoridade" ${locked ? 'disabled' : ''}>
                 <option value="">Selecione</option><option>Não</option><option>Sim</option>
               </select>
@@ -963,21 +1005,21 @@
             <div class="callout callout-warn hidden" id="rhDpErro">${ICO.alerta}<span>Não li os dados do DP. Campos em branco não serão alterados.</span></div>
           ` : ''}
           <div class="grid">
-            <div class="field span2"><label>Empresa onde será registrado</label>
+            <div class="field span2"><label for="fc-empresa">Empresa onde será registrado</label>
               <input id="fc-empresa" type="text" placeholder="Razão social" ${locked ? 'disabled' : ''} /></div>
-            <div class="field"><label>Cargo</label>
+            <div class="field"><label for="fc-cargo">Cargo</label>
               <input id="fc-cargo" type="text" placeholder="Ex: Operador de Máquinas" ${locked ? 'disabled' : ''} /></div>
-            <div class="field"><label>Departamento</label>
+            <div class="field"><label for="fc-departamento">Departamento</label>
               <input id="fc-departamento" type="text" placeholder="Ex: Produção" ${locked ? 'disabled' : ''} /></div>
-            <div class="field"><label>Tipo de contrato</label>
+            <div class="field"><label for="fc-tipoContrato">Tipo de contrato</label>
               <select id="fc-tipoContrato" ${locked ? 'disabled' : ''}>
                 <option value="">Selecione</option><option>CLT</option><option>PJ</option><option>Estágio</option><option>Temporário</option>
               </select></div>
-            <div class="field"><label>Salário</label>
+            <div class="field"><label for="fc-salario">Salário</label>
               <input id="fc-salario" type="text" placeholder="R$ 0.000,00" ${locked ? 'disabled' : ''} /></div>
-            <div class="field span2"><label>Observação sobre salário</label>
+            <div class="field span2"><label for="fc-salarioObs">Observação sobre salário</label>
               <input id="fc-salarioObs" type="text" placeholder="Ex: adicional combinado verbalmente" ${locked ? 'disabled' : ''} /></div>
-            <div class="field"><label>Data de admissão</label>
+            <div class="field"><label for="fc-admissao">Data de admissão</label>
               <input id="fc-admissao" type="date" ${locked ? 'disabled' : ''} /></div>
           </div>
         </div>
@@ -986,17 +1028,17 @@
           <div class="section-num"><div class="n">3</div><h2>Dados bancários</h2><span class="tag tag-basico">Opcional</span></div>
 
           <div class="grid cols3">
-            <div class="field"><label>PIS/PASEP</label><input id="fb-pis" type="text" placeholder="000.00000.00-0" ${locked ? 'disabled' : ''} /></div>
-            <div class="field"><label>Banco</label><input id="fb-banco" type="text" placeholder="Ex: Banco do Brasil" ${locked ? 'disabled' : ''} /></div>
-            <div class="field"><label>Tipo de conta</label>
+            <div class="field"><label for="fb-pis">PIS/PASEP</label><input id="fb-pis" type="text" placeholder="000.00000.00-0" ${locked ? 'disabled' : ''} /></div>
+            <div class="field"><label for="fb-banco">Banco</label><input id="fb-banco" type="text" placeholder="Ex: Banco do Brasil" ${locked ? 'disabled' : ''} /></div>
+            <div class="field"><label for="fb-tipoConta">Tipo de conta</label>
               <select id="fb-tipoConta" ${locked ? 'disabled' : ''}><option value="">Selecione</option><option>Corrente</option><option>Poupança</option></select></div>
-            <div class="field"><label>Agência</label><input id="fb-agencia" type="text" placeholder="0000" ${locked ? 'disabled' : ''} /></div>
-            <div class="field span2"><label>Conta</label><input id="fb-conta" type="text" placeholder="00000-0" ${locked ? 'disabled' : ''} /></div>
-            <div class="field"><label>Possui PIX?</label>
+            <div class="field"><label for="fb-agencia">Agência</label><input id="fb-agencia" type="text" placeholder="0000" ${locked ? 'disabled' : ''} /></div>
+            <div class="field span2"><label for="fb-conta">Conta</label><input id="fb-conta" type="text" placeholder="00000-0" ${locked ? 'disabled' : ''} /></div>
+            <div class="field"><label for="fb-temPix">Possui PIX?</label>
               <select id="fb-temPix" ${locked ? 'disabled' : ''}><option value="">Selecione</option><option>Sim</option><option>Não</option></select></div>
-            <div class="field"><label>Tipo de chave PIX</label>
+            <div class="field"><label for="fb-tipoPix">Tipo de chave PIX</label>
               <select id="fb-tipoPix" ${locked ? 'disabled' : ''}><option value="">Selecione</option><option>CPF</option><option>E-mail</option><option>Telefone</option><option>Aleatória</option></select></div>
-            <div class="field span2"><label>Chave PIX</label><input id="fb-chavePix" type="text" placeholder="Conforme o tipo selecionado" ${locked ? 'disabled' : ''} /></div>
+            <div class="field span2"><label for="fb-chavePix">Chave PIX</label><input id="fb-chavePix" type="text" placeholder="Conforme o tipo selecionado" ${locked ? 'disabled' : ''} /></div>
           </div>
         </div>
 
@@ -1015,11 +1057,11 @@
         <div class="card">
           <div class="grid">
             <div class="field">
-              <label>Preenchido por</label>
+              <label for="f-preenchidoPor">Preenchido por</label>
               <input id="f-preenchidoPor" type="text" placeholder="Seu nome" ${locked ? 'disabled' : ''} />
             </div>
             <div class="field">
-              <label>Data de preenchimento</label>
+              <label for="f-dataPreenchimento">Data de preenchimento</label>
               <input id="f-dataPreenchimento" type="date" ${locked ? 'disabled' : ''} />
             </div>
           </div>
@@ -1474,21 +1516,21 @@
           <div class="section-num"><div class="n">2</div><h2>Dados contratuais</h2><span class="tag tag-sensivel">Sensível</span></div>
           ${dpLocked ? '<div class="locked-note">Etapa já enviada — campos bloqueados</div>' : ''}
           <div class="grid">
-            <div class="field span2"><label>Empresa onde será registrado <span class="req">*</span></label>
+            <div class="field span2"><label for="d-empresa">Empresa onde será registrado <span class="req">*</span></label>
               <input id="d-empresa" type="text" placeholder="Razão social" ${dpLocked?'disabled':''} /></div>
-            <div class="field"><label>Cargo <span class="req">*</span></label>
+            <div class="field"><label for="d-cargo">Cargo <span class="req">*</span></label>
               <input id="d-cargo" type="text" placeholder="Ex: Operador de Máquinas" ${dpLocked?'disabled':''} /></div>
-            <div class="field"><label>Departamento <span class="req">*</span></label>
+            <div class="field"><label for="d-departamento">Departamento <span class="req">*</span></label>
               <input id="d-departamento" type="text" placeholder="Ex: Produção" ${dpLocked?'disabled':''} /></div>
-            <div class="field"><label>Tipo de contrato <span class="req">*</span></label>
+            <div class="field"><label for="d-tipoContrato">Tipo de contrato <span class="req">*</span></label>
               <select id="d-tipoContrato" ${dpLocked?'disabled':''}>
                 <option value="">Selecione</option><option>CLT</option><option>PJ</option><option>Estágio</option><option>Temporário</option>
               </select></div>
-            <div class="field"><label>Salário <span class="req">*</span></label>
+            <div class="field"><label for="d-salario">Salário <span class="req">*</span></label>
               <input id="d-salario" type="text" placeholder="R$ 0.000,00" ${dpLocked?'disabled':''} /></div>
-            <div class="field span2"><label>Observação sobre salário</label>
+            <div class="field span2"><label for="d-salarioObs">Observação sobre salário</label>
               <input id="d-salarioObs" type="text" placeholder="Ex: adicional combinado verbalmente" ${dpLocked?'disabled':''} /></div>
-            <div class="field"><label>Data de admissão <span class="req">*</span></label>
+            <div class="field"><label for="d-admissao">Data de admissão <span class="req">*</span></label>
               <input id="d-admissao" type="date" ${dpLocked?'disabled':''} /></div>
           </div>
         </div>
@@ -1496,17 +1538,17 @@
         <div class="card ${dpLocked ? 'locked' : ''}">
           <div class="section-num"><div class="n">3</div><h2>Dados bancários</h2><span class="tag tag-sensivel">Sensível</span></div>
           <div class="grid cols3">
-            <div class="field"><label>PIS/PASEP <span class="req">*</span></label><input id="d-pis" type="text" placeholder="000.00000.00-0" ${dpLocked?'disabled':''} /></div>
-            <div class="field"><label>Banco <span class="req">*</span></label><input id="d-banco" type="text" placeholder="Ex: Banco do Brasil" ${dpLocked?'disabled':''} /></div>
-            <div class="field"><label>Tipo de conta</label>
+            <div class="field"><label for="d-pis">PIS/PASEP <span class="req">*</span></label><input id="d-pis" type="text" placeholder="000.00000.00-0" ${dpLocked?'disabled':''} /></div>
+            <div class="field"><label for="d-banco">Banco <span class="req">*</span></label><input id="d-banco" type="text" placeholder="Ex: Banco do Brasil" ${dpLocked?'disabled':''} /></div>
+            <div class="field"><label for="d-tipoConta">Tipo de conta</label>
               <select id="d-tipoConta" ${dpLocked?'disabled':''}><option value="">Selecione</option><option>Corrente</option><option>Poupança</option></select></div>
-            <div class="field"><label>Agência <span class="req">*</span></label><input id="d-agencia" type="text" placeholder="0000" ${dpLocked?'disabled':''} /></div>
-            <div class="field span2"><label>Conta <span class="req">*</span></label><input id="d-conta" type="text" placeholder="00000-0" ${dpLocked?'disabled':''} /></div>
-            <div class="field"><label>Possui PIX?</label>
+            <div class="field"><label for="d-agencia">Agência <span class="req">*</span></label><input id="d-agencia" type="text" placeholder="0000" ${dpLocked?'disabled':''} /></div>
+            <div class="field span2"><label for="d-conta">Conta <span class="req">*</span></label><input id="d-conta" type="text" placeholder="00000-0" ${dpLocked?'disabled':''} /></div>
+            <div class="field"><label for="d-temPix">Possui PIX?</label>
               <select id="d-temPix" ${dpLocked?'disabled':''}><option value="">Selecione</option><option>Sim</option><option>Não</option></select></div>
-            <div class="field"><label>Tipo de chave PIX</label>
+            <div class="field"><label for="d-tipoPix">Tipo de chave PIX</label>
               <select id="d-tipoPix" ${dpLocked?'disabled':''}><option value="">Selecione</option><option>CPF</option><option>E-mail</option><option>Telefone</option><option>Aleatória</option></select></div>
-            <div class="field span2"><label>Chave PIX</label><input id="d-chavePix" type="text" placeholder="Conforme o tipo selecionado" ${dpLocked?'disabled':''} /></div>
+            <div class="field span2"><label for="d-chavePix">Chave PIX</label><input id="d-chavePix" type="text" placeholder="Conforme o tipo selecionado" ${dpLocked?'disabled':''} /></div>
           </div>
         </div>
 
@@ -1549,8 +1591,8 @@
 
         <div class="card">
           <div class="grid">
-            <div class="field"><label>Preenchido por (DP)</label><input id="d-preenchidoPor" type="text" placeholder="Seu nome" ${dpLocked?'disabled':''} /></div>
-            <div class="field"><label>Data de preenchimento</label><input id="d-dataPreenchimento" type="date" ${dpLocked?'disabled':''} /></div>
+            <div class="field"><label for="d-preenchidoPor">Preenchido por (DP)</label><input id="d-preenchidoPor" type="text" placeholder="Seu nome" ${dpLocked?'disabled':''} /></div>
+            <div class="field"><label for="d-dataPreenchimento">Data de preenchimento</label><input id="d-dataPreenchimento" type="date" ${dpLocked?'disabled':''} /></div>
           </div>
           <div class="actions">
             ${!dpLocked ? `
@@ -1676,10 +1718,10 @@
       <div class="card">
         <div class="section-num"><div class="n">${ICO.mais}</div><h2>Novo acesso</h2></div>
         <div class="grid cols3">
-          <div class="field"><label>Nome</label><input id="u-nome" type="text" placeholder="Nome da pessoa" /></div>
-          <div class="field"><label>E-mail</label><input id="u-email" type="email" placeholder="pessoa@aluminas.com.br" /></div>
-          <div class="field"><label>Senha temporária</label><input id="u-senha" type="text" placeholder="Mínimo 6 caracteres" /></div>
-          <div class="field"><label>Papel</label>
+          <div class="field"><label for="u-nome">Nome</label><input id="u-nome" type="text" placeholder="Nome da pessoa" /></div>
+          <div class="field"><label for="u-email">E-mail</label><input id="u-email" type="email" placeholder="pessoa@aluminas.com.br" /></div>
+          <div class="field"><label for="u-senha">Senha temporária</label><input id="u-senha" type="text" placeholder="Mínimo 6 caracteres" /></div>
+          <div class="field"><label for="u-papel">Papel</label>
             <select id="u-papel">
               <option value="rh">RH</option>
               <option value="dp">DP</option>
@@ -1869,25 +1911,25 @@
           <div class="section-num"><div class="n">2</div><h2>Exame e segurança do trabalho</h2></div>
           ${!editable ? '<div class="locked-note">Já enviado para o DP — campos bloqueados</div>' : ''}
           <div class="grid">
-            <div class="field"><label>Tipo de exame <span class="req">*</span></label>
+            <div class="field"><label for="s-tipoExame">Tipo de exame <span class="req">*</span></label>
               <select id="s-tipoExame" ${!editable?'disabled':''}>
                 <option value="">Selecione</option>
                 <option>Admissional</option><option>Periódico</option><option>Mudança de função</option>
                 <option>Retorno ao trabalho</option><option>Demissional</option>
               </select></div>
-            <div class="field"><label>Data do exame <span class="req">*</span></label>
+            <div class="field"><label for="s-dataExame">Data do exame <span class="req">*</span></label>
               <input id="s-dataExame" type="date" ${!editable?'disabled':''} /></div>
-            <div class="field span2"><label>Clínica / Médico responsável</label>
+            <div class="field span2"><label for="s-clinicaMedico">Clínica / Médico responsável</label>
               <input id="s-clinicaMedico" type="text" placeholder="Nome da clínica ou médico" ${!editable?'disabled':''} /></div>
-            <div class="field"><label>Resultado <span class="req">*</span></label>
+            <div class="field"><label for="s-resultado">Resultado <span class="req">*</span></label>
               <select id="s-resultado" ${!editable?'disabled':''}>
                 <option value="">Selecione</option><option>Apto</option><option>Apto com restrições</option><option>Inapto</option>
               </select></div>
-            <div class="field span2"><label>Restrições (se houver)</label>
+            <div class="field span2"><label for="s-restricoes">Restrições (se houver)</label>
               <input id="s-restricoes" type="text" placeholder="Ex: sem esforço repetitivo com o braço direito" ${!editable?'disabled':''} /></div>
-            <div class="field span2"><label>EPIs necessários</label>
+            <div class="field span2"><label for="s-episNecessarios">EPIs necessários</label>
               <input id="s-episNecessarios" type="text" placeholder="Ex: luva de segurança, óculos de proteção" ${!editable?'disabled':''} /></div>
-            <div class="field span2"><label>Observações</label>
+            <div class="field span2"><label for="s-observacoes">Observações</label>
               <textarea id="s-observacoes" placeholder="Observações adicionais" ${!editable?'disabled':''}></textarea></div>
           </div>
           <div class="checks" style="margin-top:6px;">
@@ -1897,8 +1939,8 @@
 
         <div class="card ${editable ? '' : 'locked'}">
           <div class="grid">
-            <div class="field"><label>Preenchido por</label><input id="s-preenchidoPor" type="text" placeholder="Seu nome" ${!editable?'disabled':''} /></div>
-            <div class="field"><label>Data de preenchimento</label><input id="s-dataPreenchimento" type="date" ${!editable?'disabled':''} /></div>
+            <div class="field"><label for="s-preenchidoPor">Preenchido por</label><input id="s-preenchidoPor" type="text" placeholder="Seu nome" ${!editable?'disabled':''} /></div>
+            <div class="field"><label for="s-dataPreenchimento">Data de preenchimento</label><input id="s-dataPreenchimento" type="date" ${!editable?'disabled':''} /></div>
           </div>
           <div class="actions">
             ${editable ? `
@@ -2008,7 +2050,83 @@
     { key: 'casamento',    label: 'Certidão de casamento' },
   ];
   const MAX_POR_ITEM = 3;
-  const LIMITE_TOTAL_BYTES = 5 * 1024 * 1024;
+  const LIMITE_TOTAL_BYTES = 20 * 1024 * 1024;
+  const MAX_LADO = 1600;       // lado maior da imagem depois de reduzida
+  const QUALIDADE = 0.75;      // qualidade JPEG; abaixo disso o texto sofre
+
+  // Carrega a imagem respeitando a orientação EXIF. Sem isso, foto
+  // tirada de lado no celular chega girada depois do redesenho.
+  async function carregarImagem(file) {
+    if (typeof createImageBitmap === 'function') {
+      try { return await createImageBitmap(file, { imageOrientation: 'from-image' }); }
+      catch (e) { /* navegador antigo: cai no caminho abaixo */ }
+    }
+    const url = URL.createObjectURL(file);
+    try {
+      return await new Promise((ok, erro) => {
+        const img = new Image();
+        img.onload = () => ok(img);
+        img.onerror = () => erro(new Error('imagem inválida'));
+        img.src = url;
+      });
+    } finally { setTimeout(() => URL.revokeObjectURL(url), 5000); }
+  }
+
+  function lerComoDataURL(file) {
+    return new Promise((ok, erro) => {
+      const r = new FileReader();
+      r.onload = () => ok(r.result);
+      r.onerror = () => erro(new Error('falha na leitura'));
+      r.readAsDataURL(file);
+    });
+  }
+
+  // Devolve o registro pronto para o banco. Só mexe em imagem, e
+  // só se a redução realmente diminuir o arquivo.
+  async function prepararArquivo(file) {
+    const original = { nome: file.name, tipo: file.type, tamanho: file.size };
+
+    if (!/^image\//.test(file.type) || /svg/.test(file.type)) {
+      return Object.assign(original, { base64: await lerComoDataURL(file) });
+    }
+
+    try {
+      const img = await carregarImagem(file);
+      const larg = img.width, alt = img.height;
+      const escala = Math.min(1, MAX_LADO / Math.max(larg, alt));
+
+      const canvas = document.createElement('canvas');
+      canvas.width  = Math.max(1, Math.round(larg * escala));
+      canvas.height = Math.max(1, Math.round(alt * escala));
+      const ctx = canvas.getContext('2d');
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      if (img.close) img.close();
+
+      const base64 = canvas.toDataURL('image/jpeg', QUALIDADE);
+      const bytes = Math.floor(base64.length * 0.75);
+
+      // Se não ganhou nada, fica com o original.
+      if (bytes >= file.size) {
+        return Object.assign(original, { base64: await lerComoDataURL(file) });
+      }
+
+      return {
+        nome: file.name.replace(/\.(png|webp|heic|heif|bmp|tiff?)$/i, '.jpg'),
+        tipo: 'image/jpeg',
+        tamanho: bytes,
+        tamanhoOriginal: file.size,
+        base64: base64
+      };
+    } catch (e) {
+      // Formato que o navegador não desenha (HEIC em alguns Android):
+      // envia como veio em vez de perder o anexo.
+      console.warn('sem compressão para ' + file.name, e);
+      return Object.assign(original, { base64: await lerComoDataURL(file) });
+    }
+  }
+
+  function fmtMB(bytes) { return (bytes / 1024 / 1024).toFixed(1).replace('.', ',') + ' MB'; }
 
   // ============================================================
   // PORTAL DO FUNCIONÁRIO — acesso por link (?portal=TOKEN) + CPF
@@ -2112,31 +2230,31 @@
         <div class="section-num"><div class="n">1</div><h2>Dados pessoais</h2></div>
         <div class="grid">
           <div class="field span2">
-            <label>Nome completo <span class="req">*</span></label>
+            <label for="p-nome">Nome completo <span class="req">*</span></label>
             <input id="p-nome" type="text" placeholder="Nome civil completo" ${editavel ? '' : 'disabled'} />
           </div>
           <div class="field">
-            <label>CPF</label>
+            <label for="p-cpf">CPF</label>
             <input id="p-cpf" type="text" disabled />
           </div>
           <div class="field">
-            <label>RG <span class="req">*</span></label>
+            <label for="p-rg">RG <span class="req">*</span></label>
             <input id="p-rg" type="text" placeholder="00.000.000-0" ${editavel ? '' : 'disabled'} />
           </div>
           <div class="field">
-            <label>Data de nascimento <span class="req">*</span></label>
+            <label for="p-nascimento">Data de nascimento <span class="req">*</span></label>
             <input id="p-nascimento" type="date" ${editavel ? '' : 'disabled'} />
           </div>
           <div class="field">
-            <label>Telefone <span class="req">*</span></label>
+            <label for="p-telefone">Telefone <span class="req">*</span></label>
             <input id="p-telefone" type="text" placeholder="(00) 00000-0000" ${editavel ? '' : 'disabled'} />
           </div>
           <div class="field span2">
-            <label>E-mail</label>
+            <label for="p-email">E-mail</label>
             <input id="p-email" type="email" placeholder="nome@empresa.com" ${editavel ? '' : 'disabled'} />
           </div>
           <div class="field">
-            <label>Estado civil <span class="req">*</span></label>
+            <label for="p-estadoCivil">Estado civil <span class="req">*</span></label>
             <select id="p-estadoCivil" ${editavel ? '' : 'disabled'}>
               <option value="">Selecione</option>
               <option>Solteiro(a)</option><option>Casado(a)</option><option>Divorciado(a)</option>
@@ -2144,17 +2262,17 @@
             </select>
           </div>
           <div class="field">
-            <label>Há dependentes? <span class="req">*</span></label>
+            <label for="p-dependentes">Há dependentes? <span class="req">*</span></label>
             <select id="p-dependentes" ${editavel ? '' : 'disabled'}>
               <option value="">Selecione</option><option>Não</option><option>Sim</option>
             </select>
           </div>
           <div class="field">
-            <label>Quantos dependentes</label>
+            <label for="p-numDependentes">Quantos dependentes</label>
             <input id="p-numDependentes" type="number" min="0" placeholder="0" ${editavel ? '' : 'disabled'} />
           </div>
           <div class="field">
-            <label>Menor de idade? <span class="req">*</span></label>
+            <label for="p-menoridade">Menor de idade? <span class="req">*</span></label>
             <select id="p-menoridade" ${editavel ? '' : 'disabled'}>
               <option value="">Selecione</option><option>Não</option><option>Sim</option>
             </select>
@@ -2166,28 +2284,28 @@
         <div class="section-num"><div class="n">2</div><h2>Dados bancários</h2></div>
         <div class="vh-sub" style="margin-bottom:12px;">Para o pagamento do seu salário.</div>
         <div class="grid cols3">
-          <div class="field"><label>PIS/PASEP <span class="req">*</span></label>
+          <div class="field"><label for="p-pis">PIS/PASEP <span class="req">*</span></label>
             <input id="p-pis" type="text" placeholder="000.00000.00-0" ${editavel ? '' : 'disabled'} /></div>
-          <div class="field"><label>Banco <span class="req">*</span></label>
+          <div class="field"><label for="p-banco">Banco <span class="req">*</span></label>
             <input id="p-banco" type="text" placeholder="Ex: Banco do Brasil" ${editavel ? '' : 'disabled'} /></div>
-          <div class="field"><label>Tipo de conta</label>
+          <div class="field"><label for="p-tipoConta">Tipo de conta</label>
             <select id="p-tipoConta" ${editavel ? '' : 'disabled'}><option value="">Selecione</option><option>Corrente</option><option>Poupança</option></select></div>
-          <div class="field"><label>Agência <span class="req">*</span></label>
+          <div class="field"><label for="p-agencia">Agência <span class="req">*</span></label>
             <input id="p-agencia" type="text" placeholder="0000" ${editavel ? '' : 'disabled'} /></div>
-          <div class="field span2"><label>Conta <span class="req">*</span></label>
+          <div class="field span2"><label for="p-conta">Conta <span class="req">*</span></label>
             <input id="p-conta" type="text" placeholder="00000-0" ${editavel ? '' : 'disabled'} /></div>
-          <div class="field"><label>Possui PIX?</label>
+          <div class="field"><label for="p-temPix">Possui PIX?</label>
             <select id="p-temPix" ${editavel ? '' : 'disabled'}><option value="">Selecione</option><option>Sim</option><option>Não</option></select></div>
-          <div class="field"><label>Tipo de chave PIX</label>
+          <div class="field"><label for="p-tipoPix">Tipo de chave PIX</label>
             <select id="p-tipoPix" ${editavel ? '' : 'disabled'}><option value="">Selecione</option><option>CPF</option><option>E-mail</option><option>Telefone</option><option>Aleatória</option></select></div>
-          <div class="field span2"><label>Chave PIX</label>
+          <div class="field span2"><label for="p-chavePix">Chave PIX</label>
             <input id="p-chavePix" type="text" placeholder="Conforme o tipo selecionado" ${editavel ? '' : 'disabled'} /></div>
         </div>
       </div>
 
       <div class="card">
         <div class="section-num"><div class="n">3</div><h2>Documentação</h2></div>
-        <div class="vh-sub" style="margin-bottom:12px;">Anexe de 1 a 3 arquivos por item (foto ou PDF). Limite total de 5 MB.</div>
+        <div class="vh-sub" style="margin-bottom:12px;">De 1 a 3 arquivos por item, foto ou PDF. As fotos são reduzidas automaticamente.</div>
         <div id="portalDocList"></div>
       </div>
 
@@ -2257,7 +2375,7 @@
                 ${docThumbHTML(d)}
                 <div style="min-width:0;">
                   <div class="doc-file-name">${esc(d.nome)}</div>
-                  <div class="rec-item-meta">${esc(fmtTamanho(d.tamanho))}</div>
+                  <div class="rec-item-meta">${esc(fmtTamanho(d.tamanho))}${d.tamanhoOriginal ? ' · reduzido de ' + esc(fmtTamanho(d.tamanhoOriginal)) : ''}</div>
                 </div>
               </div>
               ${editavel ? `<button class="btn-remove" onclick="portalRemoveDoc('${it.key}',${i})">Remover</button>` : ''}
@@ -2282,7 +2400,7 @@
     }).join('');
   }
 
-  window.portalAddFiles = function(itemKey, input) {
+  window.portalAddFiles = async function(itemKey, input) {
     const atual = portalDocs[itemKey] || [];
     const espaco = MAX_POR_ITEM - atual.length;
     let files = Array.from(input.files || []);
@@ -2290,29 +2408,33 @@
       toast(`Máximo de ${MAX_POR_ITEM} arquivos por item. Só os primeiros ${espaco} serão anexados.`);
       files = files.slice(0, espaco);
     }
-    let pendentes = files.length;
-    if (!pendentes) { input.value = ''; return; }
-    // Finalizacao centralizada: antes, se um arquivo falhasse, 'pendentes'
-    // chegava a zero pelo onerror e a lista nunca era redesenhada.
-    const finalizar = () => {
-      pendentes--;
-      if (pendentes > 0) return;
-      input.value = '';
-      renderPortalDocs();
-      const total = tamanhoTotalDocs();
-      if (total > LIMITE_TOTAL_BYTES) toast('Os anexos passaram de 5 MB. Remova algum arquivo antes de enviar.');
-      else if (total > LIMITE_TOTAL_BYTES * 0.8) toast('Atenção: os anexos estão perto do limite de 5 MB.');
-    };
-    files.forEach(file => {
-      const reader = new FileReader();
-      reader.onload = () => {
+    if (!files.length) { input.value = ''; return; }
+
+    input.value = '';
+    toast(files.length > 1 ? 'Preparando os arquivos...' : 'Preparando o arquivo...');
+
+    let economizado = 0;
+    for (const file of files) {
+      try {
+        const doc = await prepararArquivo(file);
+        if (doc.tamanhoOriginal) economizado += (doc.tamanhoOriginal - doc.tamanho);
         if (!portalDocs[itemKey]) portalDocs[itemKey] = [];
-        portalDocs[itemKey].push({ nome: file.name, tipo: file.type, tamanho: file.size, base64: reader.result });
-        finalizar();
-      };
-      reader.onerror = () => { toast('Não consegui ler o arquivo ' + file.name); finalizar(); };
-      reader.readAsDataURL(file);
-    });
+        portalDocs[itemKey].push(doc);
+      } catch (e) {
+        toast('Não consegui ler o arquivo ' + file.name);
+      }
+    }
+
+    renderPortalDocs();
+
+    const total = tamanhoTotalDocs();
+    if (total > LIMITE_TOTAL_BYTES) {
+      toast('Os anexos passaram de ' + fmtMB(LIMITE_TOTAL_BYTES) + '. Remova algum arquivo.');
+    } else if (total > LIMITE_TOTAL_BYTES * 0.8) {
+      toast('Atenção: os anexos estão perto do limite.');
+    } else if (economizado > 512 * 1024) {
+      toast('Foto otimizada, economizando ' + fmtMB(economizado) + '.');
+    }
   };
 
   window.portalRemoveDoc = function(itemKey, i) {
@@ -2341,7 +2463,7 @@
     DOC_ITENS.forEach(it => { if (!(portalDocs[it.key] || []).length) faltando.push('Documento: ' + it.label); });
 
     if (tamanhoTotalDocs() > LIMITE_TOTAL_BYTES) {
-      toast('Os anexos ultrapassam o limite de 5 MB. Remova alguns arquivos.');
+      toast('Os anexos ultrapassam ' + fmtMB(LIMITE_TOTAL_BYTES) + '. Remova alguns arquivos.');
       return;
     }
 
@@ -2421,7 +2543,8 @@
                 ${docThumbHTML(d)}
                 <div style="min-width:0;">
                   <div class="doc-file-name">${esc(d.nome || 'arquivo')}</div>
-                  <div class="rec-item-meta">${esc(fmtTamanho(d.tamanho))}</div>
+                  <div class="rec-item-meta">${esc(fmtTamanho(d.tamanho))}${
+                    d.tamanhoOriginal ? ' · reduzido de ' + esc(fmtTamanho(d.tamanhoOriginal)) : ''}</div>
                 </div>
               </div>
               <div class="doc-file-acts">
@@ -2464,7 +2587,7 @@
     box.innerHTML = vazio || (grade + rodape);
   }
 
-  window.staffAddFiles = function(itemKey, input) {
+  window.staffAddFiles = async function(itemKey, input) {
     const atual = staffDocs[itemKey] || [];
     const espaco = MAX_POR_ITEM - atual.length;
     let files = Array.from(input.files || []);
@@ -2472,25 +2595,23 @@
       toast(`Máximo de ${MAX_POR_ITEM} arquivos por item. Anexei os ${espaco} primeiros.`);
       files = files.slice(0, espaco);
     }
-    let pendentes = files.length;
-    if (!pendentes) { input.value = ''; return; }
-    const finalizar = () => {
-      pendentes--;
-      if (pendentes > 0) return;
-      input.value = '';
-      staffSujo = true;
-      renderStaffDocs();
-    };
-    files.forEach(file => {
-      const reader = new FileReader();
-      reader.onload = () => {
+    if (!files.length) { input.value = ''; return; }
+
+    input.value = '';
+    toast('Preparando...');
+
+    for (const file of files) {
+      try {
+        const doc = await prepararArquivo(file);
         if (!staffDocs[itemKey]) staffDocs[itemKey] = [];
-        staffDocs[itemKey].push({ nome: file.name, tipo: file.type, tamanho: file.size, base64: reader.result });
-        finalizar();
-      };
-      reader.onerror = () => { toast('Não consegui ler o arquivo ' + file.name); finalizar(); };
-      reader.readAsDataURL(file);
-    });
+        staffDocs[itemKey].push(doc);
+      } catch (e) {
+        toast('Não consegui ler o arquivo ' + file.name);
+      }
+    }
+
+    staffSujo = true;
+    renderStaffDocs();
   };
 
   window.staffRemoveDoc = function(itemKey, i) {
@@ -2507,7 +2628,7 @@
       total += Number(d.tamanho) || (d.base64 ? Math.floor(d.base64.length * 0.75) : 0);
     }));
     if (total > LIMITE_TOTAL_BYTES) {
-      toast('Os anexos passam de 5 MB no total. Remova algum arquivo antes de salvar.');
+      toast('Os anexos passam de ' + fmtMB(LIMITE_TOTAL_BYTES) + ' no total. Remova algum arquivo.');
       return;
     }
     const btn = document.getElementById('staffBtnSalvarDocs');
@@ -2554,6 +2675,7 @@
   // ============================================================
   (async function init() {
     // Link do funcionário: ?portal=TOKEN → abre o portal, sem login.
+    vigiarSessao();
     const tokenDaURL = new URLSearchParams(location.search).get('portal');
     if (tokenDaURL) {
       abrirPortal(tokenDaURL);
