@@ -979,6 +979,34 @@
               </select>
             </div>
             <div class="field">
+              <label for="f-escolaridade">Escolaridade</label>
+              <select id="f-escolaridade" ${locked ? 'disabled' : ''}>
+                <option value="">Selecione</option>
+                <option>Analfabeto</option>
+                <option>Fundamental incompleto</option>
+                <option>Fundamental completo</option>
+                <option>Médio incompleto</option>
+                <option>Médio completo</option>
+                <option>Superior incompleto</option>
+                <option>Superior completo</option>
+                <option>Pós-graduação</option>
+                <option>Mestrado</option>
+                <option>Doutorado</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="f-corRaca">Cor/raça (autodeclarada)</label>
+              <select id="f-corRaca" ${locked ? 'disabled' : ''}>
+                <option value="">Selecione</option>
+                <option>Branca</option>
+                <option>Preta</option>
+                <option>Parda</option>
+                <option>Amarela</option>
+                <option>Indígena</option>
+                <option>Prefiro não informar</option>
+              </select>
+            </div>
+            <div class="field">
               <label for="f-dependentes">Há dependentes? <span class="req">*</span></label>
               <select id="f-dependentes" ${locked ? 'disabled' : ''}>
                 <option value="">Selecione</option><option>Não</option><option>Sim</option>
@@ -1092,6 +1120,8 @@
         document.getElementById('f-telefone').value = rec.rh.telefone || '';
         document.getElementById('f-email').value = rec.rh.email || '';
         document.getElementById('f-estadoCivil').value = rec.rh.estadoCivil || '';
+        document.getElementById('f-escolaridade').value = rec.rh.escolaridade || '';
+        document.getElementById('f-corRaca').value = rec.rh.corRaca || '';
         document.getElementById('f-dependentes').value = rec.rh.dependentes || '';
         document.getElementById('f-numDependentes').value = (rec.rh.numDependentes ?? '');
         document.getElementById('f-menoridade').value = rec.rh.menoridade || '';
@@ -1149,6 +1179,7 @@
     const dados = {
       nome: val('f-nome'), cpf: val('f-cpf'), rg: val('f-rg'), nascimento: val('f-nascimento'),
       telefone: val('f-telefone'), email: val('f-email'), estadoCivil: val('f-estadoCivil'),
+      escolaridade: val('f-escolaridade'), corRaca: val('f-corRaca'),
       dependentes: val('f-dependentes'), numDependentes: val('f-numDependentes'), menoridade: val('f-menoridade'),
       preenchidoPor: val('f-preenchidoPor'), dataPreenchimento: val('f-dataPreenchimento') || todayISO()
     };
@@ -1508,6 +1539,8 @@
           <div class="readonly-row"><div class="rl">Telefone</div><div class="rv">${esc(rec.rh.telefone)}</div></div>
           <div class="readonly-row"><div class="rl">E-mail</div><div class="rv">${esc(rec.rh.email) || '—'}</div></div>
           <div class="readonly-row"><div class="rl">Estado civil</div><div class="rv">${esc(rec.rh.estadoCivil)}</div></div>
+          <div class="readonly-row"><div class="rl">Escolaridade</div><div class="rv">${esc(rec.rh.escolaridade) || '—'}</div></div>
+          <div class="readonly-row"><div class="rl">Cor/raça (autodeclarada)</div><div class="rv">${esc(rec.rh.corRaca) || '—'}</div></div>
           <div class="readonly-row"><div class="rl">Dependentes</div><div class="rv">${esc(rec.rh.dependentes)}${rec.rh.dependentes==='Sim' ? ' ('+(rec.rh.numDependentes||'0')+')' : ''}</div></div>
           <div class="readonly-row"><div class="rl">Menor de idade?</div><div class="rv">${esc(rec.rh.menoridade)}</div></div>
         </div>
@@ -2262,6 +2295,34 @@
             </select>
           </div>
           <div class="field">
+            <label for="p-escolaridade">Escolaridade</label>
+            <select id="p-escolaridade" ${editavel ? '' : 'disabled'}>
+              <option value="">Selecione</option>
+              <option>Analfabeto</option>
+              <option>Fundamental incompleto</option>
+              <option>Fundamental completo</option>
+              <option>Médio incompleto</option>
+              <option>Médio completo</option>
+              <option>Superior incompleto</option>
+              <option>Superior completo</option>
+              <option>Pós-graduação</option>
+              <option>Mestrado</option>
+              <option>Doutorado</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="p-corRaca">Cor/raça</label>
+            <select id="p-corRaca" ${editavel ? '' : 'disabled'}>
+              <option value="">Selecione</option>
+              <option>Branca</option>
+              <option>Preta</option>
+              <option>Parda</option>
+              <option>Amarela</option>
+              <option>Indígena</option>
+              <option>Prefiro não informar</option>
+            </select>
+          </div>
+          <div class="field">
             <label for="p-dependentes">Há dependentes? <span class="req">*</span></label>
             <select id="p-dependentes" ${editavel ? '' : 'disabled'}>
               <option value="">Selecione</option><option>Não</option><option>Sim</option>
@@ -2325,6 +2386,8 @@
     document.getElementById('p-telefone').value = rh.telefone || '';
     document.getElementById('p-email').value = rh.email || '';
     document.getElementById('p-estadoCivil').value = rh.estadoCivil || '';
+    document.getElementById('p-escolaridade').value = rh.escolaridade || '';
+    document.getElementById('p-corRaca').value = rh.corRaca || '';
     document.getElementById('p-dependentes').value = rh.dependentes || '';
     document.getElementById('p-numDependentes').value = (rh.numDependentes ?? '');
     document.getElementById('p-menoridade').value = rh.menoridade || '';
@@ -2481,6 +2544,7 @@
     const rhData = {
       nome: val('p-nome'), rg: val('p-rg'), nascimento: val('p-nascimento'),
       telefone: val('p-telefone'), email: val('p-email'), estadoCivil: val('p-estadoCivil'),
+      escolaridade: val('p-escolaridade'), corRaca: val('p-corRaca'),
       dependentes: val('p-dependentes'), numDependentes: val('p-numDependentes'), menoridade: val('p-menoridade')
     };
     const bancData = {
