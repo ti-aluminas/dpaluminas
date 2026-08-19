@@ -103,46 +103,28 @@
   .btn-exit:hover { border-color: var(--bordo); color: var(--bordo); }
 
   /* ---------- Containers ---------- */
-  .main { flex: 1; padding: 30px 24px 90px; }
+  .main { flex: 1; padding: 22px 22px 80px; }
   @media (max-width: 620px) { .main { padding: 20px 14px 70px; } }
   .container { max-width: 1000px; margin: 0 auto; }
 
   /* ---------- Home ---------- */
-  .home-hero { max-width: 560px; margin: 8px 0 30px; }
-  .home-hero .eyebrow {
-    font-family: 'JetBrains Mono', monospace; font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase;
-    color: var(--bordo); font-weight: 600;
+  .home { max-width: 700px; margin: 0 auto; padding-top: 4vh; }
+  .home-panel {
+    background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius);
+    border-top: 3px solid var(--bordo); box-shadow: var(--lift); padding: 26px 26px 22px;
   }
-  .home-hero h1 { font-size: 30px; font-weight: 600; margin: 10px 0 12px; line-height: 1.15; }
-  .home-hero p { color: var(--ink-soft); font-size: 15px; margin: 0; line-height: 1.6; }
-
-  .home-cols { display: grid; grid-template-columns: 1.15fr 1fr; gap: 20px; align-items: start; }
-  @media (max-width: 820px) { .home-cols { grid-template-columns: 1fr; } }
-
-  /* Trilha do processo — elemento-assinatura, também usado nas fichas */
-  .flow { display: flex; flex-direction: column; }
-  .flow-step { display: grid; grid-template-columns: 26px 1fr; gap: 14px; }
-  .flow-mark { display: flex; flex-direction: column; align-items: center; }
-  .flow-num {
-    width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-    font-family: 'JetBrains Mono', monospace; font-size: 10.5px; font-weight: 700;
-    border: 1px solid var(--rule); background: var(--surface); color: var(--ink-faint); flex-shrink: 0;
-  }
-  .flow-tail { flex: 1; width: 1px; background: var(--rule); min-height: 14px; margin: 4px 0; }
-  .flow-step:last-child .flow-tail { display: none; }
-  .flow-body { padding-bottom: 18px; }
-  .flow-step:last-child .flow-body { padding-bottom: 0; }
-  .flow-desk {
-    font-family: 'JetBrains Mono', monospace; font-size: 10.5px; letter-spacing: 0.1em;
+  .home-panel .eyebrow {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.16em;
     text-transform: uppercase; color: var(--ink-faint); font-weight: 600;
   }
-  .flow-what { font-size: 13.5px; color: var(--ink-soft); line-height: 1.5; margin-top: 3px; }
-  .flow-step.done .flow-num { background: var(--surface-sunk); color: var(--ink-soft); border-color: var(--rule); }
-  .flow-step.done .flow-tail { background: var(--bordo-edge); }
-  .flow-step.done .flow-desk { color: var(--ink-soft); }
-  .flow-step.current .flow-num { background: var(--bordo); border-color: var(--bordo); color: #fff; }
-  .flow-step.current .flow-desk { color: var(--bordo); }
-  .flow-step.current .flow-what { color: var(--ink); font-weight: 500; }
+  .home-panel h1 { font-size: 22px; font-weight: 600; margin: 7px 0 18px; letter-spacing: -0.02em; }
+  .home-panel .hint { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--rule-soft); }
+
+  .home-flow { margin-top: 14px; }
+  .home-flow-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--ink-faint); font-weight: 600; margin-bottom: 7px;
+  }
 
   /* Faixa de etapa nas telas de ficha */
   .band {
@@ -150,7 +132,7 @@
     border: 1px solid var(--rule); border-radius: var(--radius); background: var(--surface);
     overflow: hidden; margin-bottom: 20px;
   }
-  .band-cell { padding: 11px 14px; border-left: 1px solid var(--rule-soft); }
+  .band-cell { padding: 9px 13px; border-left: 1px solid var(--rule-soft); }
   .band-cell:first-child { border-left: none; }
   .band-desk {
     font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
@@ -198,6 +180,18 @@
   }
   .modal-box input:focus { outline: 2px solid var(--bordo); outline-offset: -1px; border-color: var(--bordo); }
   .modal-actions { display: flex; gap: 10px; margin-top: 18px; }
+  .link-box {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.6;
+    background: var(--surface-sunk); border: 1px solid var(--rule); border-radius: 4px;
+    padding: 11px 13px; word-break: break-all; color: var(--ink); user-select: all;
+  }
+  .link-notas {
+    margin-top: 14px; padding-top: 13px; border-top: 1px solid var(--rule-soft);
+    font-size: 12.5px; color: var(--ink-soft); line-height: 1.6;
+    display: flex; flex-direction: column; gap: 5px;
+  }
+  .link-notas .aviso { color: var(--warn); font-weight: 500; }
+
   .modal-err { color: var(--danger); font-size: 12.5px; margin-top: 10px; display: none; }
   .modal-err.show { display: block; }
 
@@ -222,10 +216,10 @@
 
   /* ---------- View header ---------- */
   .view-header {
-    display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap;
-    margin-bottom: 22px; border-bottom: 1px solid var(--rule); padding-bottom: 16px;
+    display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;
+    margin-bottom: 16px; border-bottom: 1px solid var(--rule); padding-bottom: 13px;
   }
-  .view-header h1 { font-size: 23px; font-weight: 600; margin: 0 0 6px; }
+  .view-header h1 { font-size: 19px; font-weight: 600; margin: 0; }
   .view-header .vh-sub { font-size: 13.5px; color: var(--ink-soft); max-width: 520px; line-height: 1.55; }
   .view-tabs { display: inline-flex; border: 1px solid var(--rule); border-radius: var(--radius); overflow: hidden; background: var(--surface); }
   .vtab {
@@ -242,12 +236,13 @@
   /* ---------- Cards ---------- */
   .card {
     background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius);
-    padding: 0 20px 20px; box-shadow: var(--lift); margin-bottom: 16px;
+    padding: 0 18px 18px; box-shadow: var(--lift); margin-bottom: 12px;
   }
   .card.locked { background: var(--surface-sunk); }
   .section-num {
-    display: flex; align-items: center; gap: 10px;
-    margin: 0 -20px 18px; padding: 13px 20px; border-bottom: 1px solid var(--rule-soft);
+    display: flex; align-items: center; gap: 9px;
+    margin: 0 -18px 15px; padding: 11px 18px;
+    border-bottom: 1px solid var(--rule-soft); background: var(--surface-sunk);
   }
   .section-num .n {
     font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 11px; color: var(--ink-soft);
@@ -264,7 +259,7 @@
   .tag-basico { background: var(--info-bg); color: var(--info); }
 
   /* ---------- Fields ---------- */
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 11px 14px; }
   .grid.cols3 { grid-template-columns: repeat(3, 1fr); }
   @media (max-width: 640px) { .grid, .grid.cols3 { grid-template-columns: 1fr; } }
   .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
@@ -339,16 +334,16 @@
   .rec-list .rec-item + .rec-item { border-top: none; }
   .rec-item {
     background: var(--surface); border: 1px solid var(--rule);
-    padding: 13px 16px; display: flex; justify-content: space-between; align-items: center;
-    gap: 14px; cursor: pointer; transition: background 0.12s ease;
+    padding: 9px 14px; display: flex; justify-content: space-between; align-items: center;
+    gap: 14px; cursor: pointer; transition: background 0.1s ease;
     margin-top: -1px;
   }
   .rec-item:first-child { border-radius: var(--radius) var(--radius) 0 0; margin-top: 0; }
   .rec-item:last-child { border-radius: 0 0 var(--radius) var(--radius); }
   .rec-item:only-child { border-radius: var(--radius); }
   .rec-item:hover { background: var(--surface-sunk); position: relative; z-index: 1; }
-  .rec-item-name { font-weight: 600; font-size: 14.5px; word-break: break-word; }
-  .rec-item-meta { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-faint); margin-top: 4px; }
+  .rec-item-name { font-weight: 600; font-size: 14px; word-break: break-word; }
+  .rec-item-meta { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: var(--ink-faint); margin-top: 2px; letter-spacing: -0.01em; }
   .rec-item-right { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
   @media (max-width: 620px) { .rec-item { flex-direction: column; align-items: flex-start; } .rec-item-right { width: 100%; justify-content: space-between; } }
 
@@ -406,7 +401,7 @@
   }
   .detail-back:hover { color: var(--bordo); }
   .detail-title-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; }
-  .detail-title-row h1 { font-size: 23px; font-weight: 600; margin: 0 0 6px; }
+  .detail-title-row h1 { font-size: 20px; font-weight: 600; margin: 0 0 5px; }
   .detail-proto { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--ink-faint); }
 
   .history-list { display: flex; flex-direction: column; }
@@ -477,52 +472,24 @@
     <div class="container" id="containerHome">
       <!-- ============ HOME ============ -->
       <div id="screenHome">
-        <div class="home-hero">
-          <div class="eyebrow">Aluminas Móveis</div>
-          <h1>Admissão de funcionários</h1>
-          <p>A ficha passa por três mesas: o RH levanta os dados pessoais, o DP fecha contrato e conferência, a Segurança do Trabalho registra o exame. Cada mesa só enxerga o que precisa.</p>
-        </div>
-
-        <div class="home-cols">
-          <div class="card">
-            <div class="section-num"><div class="n">
-              <svg class="icon" style="width:13px;height:13px;" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
-            </div><h2>Entrar</h2></div>
-            <p style="font-size:13.5px;color:var(--ink-soft);line-height:1.6;margin:0 0 18px;">
-              Use o e-mail e a senha que o DP cadastrou para você. O sistema abre direto na mesa do seu setor. Nenhum dado de funcionário aparece antes do login.
-            </p>
+        <div class="home">
+          <div class="home-panel">
+            <div class="eyebrow">Sistema de Admissão</div>
+            <h1>Aluminas Móveis</h1>
             <button class="btn btn-primary" onclick="abrirLogin()">
               <svg class="icon" viewBox="0 0 24 24"><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/></svg>
-              Entrar no sistema
+              Entrar
             </button>
-            <div class="hint">É o funcionário e recebeu um link para confirmar seus dados? Abra o link que o RH enviou — ele não pede senha, só o seu CPF.</div>
+            <div class="hint">Funcionário com link recebido do RH: abra o link, sem senha.</div>
           </div>
 
-          <div class="card">
-            <div class="section-num"><div class="n">
-              <svg class="icon" style="width:13px;height:13px;" viewBox="0 0 24 24"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h10"/></svg>
-            </div><h2>Como a ficha anda</h2></div>
-            <div class="flow">
-              <div class="flow-step">
-                <div class="flow-mark"><div class="flow-num">1</div><div class="flow-tail"></div></div>
-                <div class="flow-body"><div class="flow-desk">RH</div><div class="flow-what">Abre a ficha, gera o link e confere os dados pessoais.</div></div>
-              </div>
-              <div class="flow-step">
-                <div class="flow-mark"><div class="flow-num">2</div><div class="flow-tail"></div></div>
-                <div class="flow-body"><div class="flow-desk">Funcionário</div><div class="flow-what">Confirma os dados e anexa os documentos pelo link.</div></div>
-              </div>
-              <div class="flow-step">
-                <div class="flow-mark"><div class="flow-num">3</div><div class="flow-tail"></div></div>
-                <div class="flow-body"><div class="flow-desk">DP</div><div class="flow-what">Registra contrato, salário, dados bancários e conferência.</div></div>
-              </div>
-              <div class="flow-step">
-                <div class="flow-mark"><div class="flow-num">4</div><div class="flow-tail"></div></div>
-                <div class="flow-body"><div class="flow-desk">Segurança do Trabalho</div><div class="flow-what">Lança o ASO e as restrições, e devolve ao DP.</div></div>
-              </div>
-              <div class="flow-step">
-                <div class="flow-mark"><div class="flow-num">5</div><div class="flow-tail"></div></div>
-                <div class="flow-body"><div class="flow-desk">DP</div><div class="flow-what">Revisa tudo e conclui a admissão.</div></div>
-              </div>
+          <div class="home-flow">
+            <div class="home-flow-label">Fluxo da ficha</div>
+            <div class="band">
+              <div class="band-cell"><div class="band-desk">RH</div><div class="band-state">Dados pessoais</div></div>
+              <div class="band-cell"><div class="band-desk">DP</div><div class="band-state">Contrato e conferência</div></div>
+              <div class="band-cell"><div class="band-desk">Segurança do Trabalho</div><div class="band-state">Exame ocupacional</div></div>
+              <div class="band-cell"><div class="band-desk">DP</div><div class="band-state">Revisão e fechamento</div></div>
             </div>
           </div>
         </div>
@@ -704,26 +671,17 @@
     if (homeOriginalHTML === null) homeOriginalHTML = home.innerHTML;
     home.classList.remove('hidden');
     home.innerHTML = `
-      <div class="home-hero">
-        <div class="eyebrow">Administrador</div>
-        <h1>Escolha a mesa</h1>
-        <p>Você trabalha em uma mesa por vez, com as mesmas regras de quem senta nela. Enquanto nenhuma estiver escolhida, nenhuma ficha aparece. A troca fica registrada.</p>
-      </div>
-      <div class="home-cols">
-        <div class="card">
-          <div class="section-num"><div class="n">${ICO.lista}</div><h2>Mesas</h2></div>
-          <div class="actions" style="margin-top:0;flex-direction:column;align-items:stretch;">
-            <button class="btn btn-ghost btn-block" onclick="adminTrocarMesa('rh')">${ICO.avancar}Mesa do RH — dados pessoais</button>
-            <button class="btn btn-ghost btn-block" onclick="adminTrocarMesa('dp')">${ICO.avancar}Mesa do DP — contrato e conferência</button>
-            <button class="btn btn-ghost btn-block" onclick="adminTrocarMesa('seguranca')">${ICO.avancar}Mesa da Segurança — exame ocupacional</button>
+      <div class="home">
+        <div class="home-panel">
+          <div class="eyebrow">Administrador · ${esc(currentUser.nome || '')}</div>
+          <h1>Escolha a mesa</h1>
+          <div class="actions" style="margin-top:0;flex-direction:column;align-items:stretch;gap:8px;">
+            <button class="btn btn-ghost btn-block" onclick="adminTrocarMesa('rh')">${ICO.avancar}Mesa do RH</button>
+            <button class="btn btn-ghost btn-block" onclick="adminTrocarMesa('dp')">${ICO.avancar}Mesa do DP</button>
+            <button class="btn btn-ghost btn-block" onclick="adminTrocarMesa('seguranca')">${ICO.avancar}Mesa da Segurança</button>
+            <button class="btn btn-primary btn-block" onclick="adminIrParaAcessos()">${ICO.acessos}Gestão de acessos</button>
           </div>
-        </div>
-        <div class="card">
-          <div class="section-num"><div class="n">${ICO.acessos}</div><h2>Acessos</h2></div>
-          <p style="font-size:13.5px;color:var(--ink-soft);line-height:1.6;margin:0 0 16px;">
-            Cadastrar pessoas, trocar papel e resetar senha não dependem de mesa — você faz isso a qualquer momento.
-          </p>
-          <button class="btn btn-primary" onclick="adminIrParaAcessos()">${ICO.acessos}Gestão de acessos</button>
+          <div class="hint">Nenhuma ficha carrega enquanto não houver mesa escolhida. A troca fica registrada.</div>
         </div>
       </div>`;
   }
@@ -932,7 +890,7 @@
         <div class="view-header">
           <div>
             <h1>${rec ? 'Ficha de ' + esc(rec.rh.nome) : 'Nova ficha · Dados pessoais'}</h1>
-            <div class="vh-sub">Preencha os dados pessoais do candidato. Depois de enviar para o DP, esses dados ficam bloqueados para edição aqui.</div>
+
           </div>
           ${rec ? `<span class="status-pill status-${rec.status}">${STATUS_LABEL[rec.status]}</span>` : ''}
         </div>
@@ -996,10 +954,10 @@
 
         <div class="card">
           <div class="section-num"><div class="n">2</div><h2>Dados contratuais</h2><span class="tag tag-basico">Opcional</span></div>
-          <div class="vh-sub" style="margin-bottom:12px;">Se já souber, adiante estes dados. Não é obrigatório — o DP pode completar depois. O funcionário não vê estas informações.</div>
+
           ${rec ? `
-            <div class="callout hidden" id="rhDpCarregando">${ICO.info}<span>Buscando o que o DP já preencheu. Os campos abrem em um instante — assim nada do que você digitar é sobrescrito.</span></div>
-            <div class="callout callout-warn hidden" id="rhDpErro">${ICO.alerta}<span>Não consegui ler o que o DP já tem nesta ficha. Você pode preencher normalmente, mas os campos que deixar em branco não serão alterados.</span></div>
+            <div class="callout hidden" id="rhDpCarregando">${ICO.info}<span>Carregando o que o DP já preencheu.</span></div>
+            <div class="callout callout-warn hidden" id="rhDpErro">${ICO.alerta}<span>Não li os dados do DP. Campos em branco não serão alterados.</span></div>
           ` : ''}
           <div class="grid">
             <div class="field span2"><label>Empresa onde será registrado</label>
@@ -1023,7 +981,7 @@
 
         <div class="card">
           <div class="section-num"><div class="n">3</div><h2>Dados bancários</h2><span class="tag tag-basico">Opcional</span></div>
-          <div class="vh-sub" style="margin-bottom:12px;">Opcional. O próprio funcionário também pode preencher pelo portal.</div>
+
           <div class="grid cols3">
             <div class="field"><label>PIS/PASEP</label><input id="fb-pis" type="text" placeholder="000.00000.00-0" ${locked ? 'disabled' : ''} /></div>
             <div class="field"><label>Banco</label><input id="fb-banco" type="text" placeholder="Ex: Banco do Brasil" ${locked ? 'disabled' : ''} /></div>
@@ -1042,7 +1000,7 @@
         ${rec ? `
         <div class="card">
           <div class="section-num"><div class="n">4</div><h2>Documentos enviados pelo funcionário</h2><span class="tag tag-basico">Portal</span></div>
-          <div class="vh-sub" style="margin-bottom:14px;">O candidato anexa pelo link do portal. Se ele trouxe cópias em mãos ou mandou por outro caminho, anexe você mesmo aqui.</div>
+
           <div id="rhUploadDocs"><div class="empty-state">Carregando anexos...</div></div>
         </div>
 
@@ -1063,20 +1021,19 @@
             </div>
           </div>
           ${rec && !locked && funcPreencheu ? `
-            <div class="callout callout-action">${ICO.check}<span>O funcionário já preencheu os dados dele pelo portal. Revise e encaminhe ao DP.</span></div>` : ''}
+            <div class="callout callout-action">${ICO.check}<span>Funcionário já confirmou os dados pelo portal.</span></div>` : ''}
           <div class="actions">
             ${!locked ? `
               <button class="btn btn-ghost" onclick="rhSaveDraft('${rec ? rec.id : ''}')">${ICO.salvar}Salvar rascunho</button>
-              ${rec ? `<button class="btn btn-ghost" onclick="rhCopiarLink('${rec.id}')">${ICO.link}Copiar link do funcionário</button>` : ''}
+              ${rec ? `<button class="btn btn-ghost" onclick="rhCopiarLink('${rec.id}')">${ICO.link}Link do funcionário</button>` : ''}
               ${rec ? `<button class="btn btn-primary" onclick="rhSendToDP('${rec.id}')">${ICO.avancar}Enviar para o DP</button>` : ''}
               ${rec ? `<button class="btn btn-danger spacer" onclick="rhCancelar('${rec.id}')">${ICO.lixo}Cancelar ficha</button>` : ''}
             ` : `
-              <button class="btn btn-ghost" onclick="rhCopiarLink('${rec.id}')">${ICO.link}Copiar link do funcionário</button>
+              <button class="btn btn-ghost" onclick="rhCopiarLink('${rec.id}')">${ICO.link}Link do funcionário</button>
             `}
           </div>
-          ${rec && !locked && !funcPreencheu ? '<div class="hint">O funcionário ainda não abriu o link. Você pode esperar, ou preencher no lugar dele e encaminhar assim mesmo — o sistema vai pedir confirmação.</div>' : ''}
           ${!rec ? '<div class="hint">Salve o rascunho para gerar o link do funcionário.</div>' : ''}
-          ${locked ? '<div class="hint">A ficha já saiu da sua mesa. Se algum dado pessoal estiver errado, peça ao DP para devolver a ficha para o RH.</div>' : ''}
+          ${locked ? '<div class="hint">Para corrigir dado pessoal, peça ao DP para devolver a ficha.</div>' : ''}
         </div>
 
         ${rec ? historyCardHTML(rec) : ''}
@@ -1114,7 +1071,7 @@
       <div class="view-header">
         <div>
           <h1>RH · Admissões</h1>
-          <div class="vh-sub">Cadastre os dados pessoais de um novo candidato ou acompanhe as fichas já enviadas.</div>
+
         </div>
         <button class="btn btn-primary" onclick="renderRH('form')">${ICO.mais}Nova ficha</button>
       </div>
@@ -1311,15 +1268,85 @@
     renderRH('lista');
   };
 
+  function soDigitos(v) { return String(v || '').replace(/\D+/g, ''); }
+
+  function fmtCPF(v) {
+    const d = soDigitos(v);
+    if (d.length !== 11) return v || '';
+    return d.slice(0,3) + '.' + d.slice(3,6) + '.' + d.slice(6,9) + '-' + d.slice(9);
+  }
+
+  // Monta o wa.me com DDI. Sem telefone na ficha, abre o WhatsApp
+  // sem destinatario e o RH escolhe o contato.
+  function linkWhatsApp(telefone, texto) {
+    let d = soDigitos(telefone);
+    if (d.length === 10 || d.length === 11) d = '55' + d;
+    else if (d.length < 12) d = '';
+    return 'https://wa.me/' + d + '?text=' + encodeURIComponent(texto);
+  }
+
   window.rhCopiarLink = async function(recId) {
+    const rec = getRecord(recId);
     const r = await chamarRPC('rpc_rh_gerar_link', { p_id: recId });
     if (!r.ok || !r.data) return;
+
     const url = location.origin + location.pathname + '?portal=' + r.data;
+    const rh = (rec && rec.rh) || {};
+    const primeiroNome = String(rh.nome || '').trim().split(/\s+/)[0] || '';
+    const cpf = fmtCPF(rh.cpf);
+
+    const mensagem =
+      (primeiroNome ? 'Olá, ' + primeiroNome + '! ' : 'Olá! ') +
+      'Aqui é o RH da Aluminas Móveis. Para seguir com sua admissão, confirme seus dados e anexe seus documentos neste link:\n\n' + url +
+      '\n\nPara abrir, informe seu CPF' + (cpf ? ' (' + cpf + ')' : '') + '. Não precisa de senha.';
+
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.id = 'linkOverlay';
+    overlay.innerHTML = `
+      <div class="modal-box" style="max-width:520px;">
+        <h3>Link do funcionário</h3>
+        <div class="ms">${rh.nome ? esc(rh.nome) : 'Ficha sem nome'}${cpf ? ' · CPF ' + esc(cpf) : ''}</div>
+
+        <div class="link-box" id="linkUrl">${esc(url)}</div>
+
+        <div class="modal-actions" style="margin-top:14px;">
+          <button class="btn btn-primary" onclick="rhCopiar('${esc(url)}')">${ICO.link}Copiar link</button>
+          <a class="btn btn-ghost" href="${esc(linkWhatsApp(rh.telefone, mensagem))}" target="_blank" rel="noopener">${ICO.avancar}Abrir no WhatsApp</a>
+        </div>
+
+        <div class="link-notas">
+          <div>Para entrar, o funcionário digita o CPF${cpf ? ' ' + esc(cpf) : ' cadastrado nesta ficha'}. Não há senha.</div>
+          <div>O link para de funcionar quando a ficha sai do RH.</div>
+          ${soDigitos(rh.telefone).length >= 10 ? '' : '<div class="aviso">Sem telefone na ficha: o WhatsApp abre sem destinatário.</div>'}
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn btn-ghost btn-block" onclick="fecharLink()">Fechar</button>
+        </div>
+      </div>`;
+    overlay.addEventListener('click', e => { if (e.target === overlay) fecharLink(); });
+    document.body.appendChild(overlay);
+  };
+
+  window.fecharLink = function() {
+    const o = document.getElementById('linkOverlay');
+    if (o) o.remove();
+  };
+
+  window.rhCopiar = async function(url) {
     try {
       await navigator.clipboard.writeText(url);
-      toast('Link copiado! Envie ao funcionário.');
+      toast('Link copiado.');
     } catch (e) {
-      window.prompt('Copie o link do funcionário:', url);
+      const el = document.getElementById('linkUrl');
+      if (el) {
+        const faixa = document.createRange();
+        faixa.selectNodeContents(el);
+        const sel = window.getSelection();
+        sel.removeAllRanges(); sel.addRange(faixa);
+        toast('Link selecionado. Use Ctrl+C para copiar.');
+      }
     }
   };
 
@@ -1477,7 +1504,7 @@
 
         <div class="card">
           <div class="section-num"><div class="n">4</div><h2>Documentos enviados pelo funcionário</h2><span class="tag tag-basico">Portal</span></div>
-          <div class="vh-sub" style="margin-bottom:14px;">Anexado pelo funcionário no portal ou pelas mesas. Você também pode anexar o que faltar.</div>
+
           <div id="dpUploadDocs"><div class="empty-state">Carregando anexos...</div></div>
         </div>
 
@@ -1527,7 +1554,7 @@
             ${rec.status === STATUS.AGUARDANDO_SEGURANCA ? `<button class="btn btn-ghost" disabled>Aguardando o técnico de segurança</button>` : ''}
             ${rec.status !== STATUS.CONCLUIDO ? `<button class="btn btn-ghost spacer" onclick="dpDevolverRH('${rec.id}')">${ICO.devolver}Devolver ao RH</button>` : ''}
           </div>
-          ${rec.status !== STATUS.CONCLUIDO ? '<div class="hint">Devolver ao RH reabre a ficha como rascunho para corrigir dado pessoal errado — CPF, nome ou data de nascimento. O que você já preencheu aqui continua salvo.</div>' : ''}
+
         </div>
 
         ${historyCardHTML(rec)}
@@ -1573,7 +1600,7 @@
       <div class="view-header">
         <div>
           <h1>DP · Admissões</h1>
-          <div class="vh-sub">Você vê todos os dados de todas as fichas, incluindo os sensíveis. Preencha contratuais/bancários e encaminhe entre setores.</div>
+
         </div>
         <div style="display:flex;flex-direction:column;gap:10px;align-items:flex-end;">
           <button class="btn btn-ghost btn-sm" onclick="dpAbrirUsuarios()">${ICO.acessos}Gestão de acessos</button>
@@ -1618,7 +1645,7 @@
       <div class="view-header">
         <div>
           <h1>DP · Gestão de acessos</h1>
-          <div class="vh-sub">Crie e gerencie quem pode entrar no RH, no DP e na Segurança do Trabalho.</div>
+
         </div>
         <button class="btn btn-ghost btn-sm" onclick="dpAbrirAdmissoes()">${ICO.voltar}Voltar para admissões</button>
       </div>
@@ -1638,7 +1665,7 @@
           </div>
         </div>
         <div class="actions"><button class="btn btn-primary" onclick="dpCriarUsuario()">Criar acesso</button></div>
-        <div class="hint">A pessoa já consegue entrar com esse e-mail e senha assim que você criar. Recomenda-se avisar pra ela trocar a senha depois com você mesmo (essa tela ainda não tem "esqueci minha senha" self-service).</div>
+        <div class="hint">O acesso vale imediatamente. Não há recuperação de senha self-service.</div>
       </div>
 
       <div class="card">
@@ -1878,7 +1905,7 @@
       <div class="view-header">
         <div>
           <h1>Segurança do Trabalho</h1>
-          <div class="vh-sub">Você vê apenas dados básicos, empresa/cargo/departamento e o que você mesmo preenche. Dados contratuais e bancários não são exibidos.</div>
+
         </div>
       </div>
       <div class="rec-list" id="segList"></div>
@@ -2114,7 +2141,7 @@
 
       <div class="card">
         <div class="section-num"><div class="n">2</div><h2>Dados bancários</h2></div>
-        <div class="vh-sub" style="margin-bottom:12px;">Preencha seus dados bancários para o pagamento. Os campos com * são recomendados.</div>
+        <div class="vh-sub" style="margin-bottom:12px;">Para o pagamento do seu salário.</div>
         <div class="grid cols3">
           <div class="field"><label>PIS/PASEP <span class="req">*</span></label>
             <input id="p-pis" type="text" placeholder="000.00000.00-0" ${editavel ? '' : 'disabled'} /></div>
