@@ -601,11 +601,21 @@
     return `${d.getFullYear()}-${mm}-${dd}`;
   }
   function nowLabel() { return new Date().toLocaleString('pt-BR'); }
-  function toast(msg) {
+  // Aviso de erro fica mais tempo e nao e sobrescrito por um
+  // sucesso na sequencia: era assim que "Erro:" sumia antes de
+  // qualquer um conseguir ler.
+  let toastAte = 0;
+  function toastErro(msg) { toast(msg, 7000); toastAte = Date.now() + 7000; }
+
+  let toastTimer = null;
+  function toast(msg, duracao) {
+    // Enquanto um erro estiver na tela, um sucesso nao passa por cima.
+    if (Date.now() < toastAte && !duracao) return;
     const t = document.getElementById('toast');
     t.textContent = msg;
     t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 2600);
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), duracao || 2600);
   }
   function val(id) { const el = document.getElementById(id); return el ? el.value.trim() : ''; }
   function checked(id) { const el = document.getElementById(id); return el ? el.checked : false; }
@@ -669,7 +679,7 @@
       const { data, error } = await supabase.rpc(nome, params || {});
       if (error) {
         console.error(nome, error);
-        if (!(opts && opts.silent)) toast('Erro: ' + error.message);
+        if (!(opts && opts.silent)) toastErro('Erro: ' + error.message);
         return { ok: false, data: null };
       }
       return { ok: true, data };
@@ -1302,11 +1312,15 @@
   }
 
   // Salva o bloco dp (contratuais/bancários) do RH, se houver algo preenchido.
+  // Devolve se gravou. Antes descartava o retorno: quando a RPC
+  // falhava, o fluxo seguia e o RH via "Rascunho salvo" mesmo com
+  // os dados contratuais perdidos.
   async function salvarDpDoRH(recId) {
-    if (!recId) return;
+    if (!recId) return { ok: true, nada: true };
     const dpExtra = collectRHDpFields();
-    if (Object.keys(dpExtra).length === 0) return;
-    await chamarRPC('rpc_rh_salvar_dp', { p_id: recId, p_dp: dpExtra });
+    if (Object.keys(dpExtra).length === 0) return { ok: true, nada: true };
+    const r = await chamarRPC('rpc_rh_salvar_dp', { p_id: recId, p_dp: dpExtra }, { silent: true });
+    return { ok: r.ok, nada: false };
   }
 
   window.rhSaveDraft = async function(recId) {
@@ -1325,8 +1339,16 @@
       const r = await chamarRPC('rpc_rh_salvar', { p_id: recId, p_rh: rhData });
       if (!r.ok) return;
     }
-    await salvarDpDoRH(novoId);
+    const dpSalvo = await salvarDpDoRH(novoId);
     await carregarRegistrosDoPapel();
+
+    if (!dpSalvo.ok) {
+      // NAO redesenha: o redesenho recarrega os campos do banco e
+      // apagaria da tela o que o RH digitou e nao chegou a gravar.
+      toastErro('Os dados contratuais não foram gravados — eles continuam na tela, não feche a página. Avise o TI.');
+      return;
+    }
+
     toast('Rascunho salvo.');
     renderRH('form', novoId);
   };
@@ -1459,7 +1481,11 @@
       if (!r.ok) return;
       idAlvo = r.data;
     }
-    await salvarDpDoRH(idAlvo);
+    const dpSalvo = await salvarDpDoRH(idAlvo);
+    if (!dpSalvo.ok) {
+      toastErro('Os dados contratuais não foram gravados. A ficha NÃO foi encaminhada — avise o TI.');
+      return;
+    }
     const envio = await chamarRPC('rpc_rh_enviar', { p_id: idAlvo, p_rh: rhData, p_por: rhData.preenchidoPor });
     if (!envio.ok) return;
     await carregarRegistrosDoPapel();
