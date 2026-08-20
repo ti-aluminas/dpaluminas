@@ -449,6 +449,45 @@
   body.ocupado { cursor: progress; }
   body.ocupado .btn, body.ocupado .btn-exit { pointer-events: none; opacity: 0.65; }
 
+  /* ---------- Impressão do dossiê ---------- */
+  #printArea { display: none; }
+
+  @media print {
+    @page { size: A4; margin: 14mm 12mm; }
+    body { background: #fff; }
+    .app, .toast, .modal-overlay { display: none !important; }
+    #printArea { display: block; color: #000; font-size: 11pt; }
+
+    .pr-head {
+      display: flex; justify-content: space-between; align-items: flex-end;
+      border-bottom: 2px solid #000; padding-bottom: 8pt; margin-bottom: 14pt;
+    }
+    .pr-head h1 { font-size: 15pt; margin: 0 0 3pt; font-weight: 700; }
+    .pr-head .pr-meta { font-family: 'JetBrains Mono', monospace; font-size: 8pt; text-align: right; line-height: 1.5; }
+    .pr-sub { font-size: 10pt; }
+
+    .pr-sec { margin-bottom: 12pt; break-inside: avoid; }
+    .pr-sec h2 {
+      font-size: 9pt; text-transform: uppercase; letter-spacing: 0.1em;
+      border-bottom: 1px solid #999; padding-bottom: 3pt; margin: 0 0 6pt; font-weight: 700;
+    }
+    .pr-row { display: flex; gap: 10pt; padding: 2.5pt 0; break-inside: avoid; }
+    .pr-row .pl { width: 46mm; flex-shrink: 0; color: #444; }
+    .pr-row .pv { font-weight: 600; }
+    .pr-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16pt; }
+
+    /* Anexos: um por bloco, sem cortar a imagem no meio da página */
+    .pr-doc { break-inside: avoid; page-break-inside: avoid; margin-bottom: 10pt; }
+    .pr-doc-t { font-size: 9pt; font-weight: 700; margin-bottom: 4pt; border-bottom: 1px solid #ccc; padding-bottom: 2pt; }
+    .pr-doc img { max-width: 100%; max-height: 200mm; display: block; border: 1px solid #999; }
+    .pr-doc .pr-file { font-family: 'JetBrains Mono', monospace; font-size: 8pt; color: #333; padding: 3pt 0; }
+    .pr-quebra { break-before: page; page-break-before: always; }
+
+    .pr-assina { margin-top: 20pt; display: flex; gap: 20mm; break-inside: avoid; }
+    .pr-assina div { flex: 1; border-top: 1px solid #000; padding-top: 4pt; font-size: 8pt; text-align: center; }
+    .pr-rodape { margin-top: 14pt; border-top: 1px solid #999; padding-top: 5pt; font-size: 7.5pt; color: #444; }
+  }
+
   .hidden { display: none !important; }
 </style>
 </head>
@@ -518,6 +557,7 @@
 
   <div class="toast" id="toast"></div>
 </div>
+<div id="printArea" aria-hidden="true"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
@@ -579,7 +619,8 @@
       salvar:   w('<path d="M5 4h11l4 4v12H5z"/><path d="M8 4v5h7"/><path d="M8 20v-6h8v6"/>'),
       alerta:   w('<path d="M12 4l9 16H3z"/><path d="M12 10v4"/><path d="M12 17.5v.5"/>'),
       info:     w('<circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8v.5"/>'),
-      anexo:    w('<path d="M20 11l-8.5 8.5a4.5 4.5 0 0 1-6.4-6.4L13 4.8a3 3 0 0 1 4.2 4.2l-8 8a1.5 1.5 0 0 1-2.1-2.1L15 7"/>')
+      anexo:    w('<path d="M20 11l-8.5 8.5a4.5 4.5 0 0 1-6.4-6.4L13 4.8a3 3 0 0 1 4.2 4.2l-8 8a1.5 1.5 0 0 1-2.1-2.1L15 7"/>'),
+      imprimir: w('<path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M6 15h12v6H6z"/>')
     };
   })();
 
@@ -1661,6 +1702,7 @@
             ${canFinalize ? `<button class="btn btn-dark" onclick="dpFinalize('${rec.id}')">${ICO.check}Concluir admissão</button>` : ''}
             ${rec.status === STATUS.CONCLUIDO ? `<button class="btn btn-ghost" disabled>Admissão concluída</button>` : ''}
             ${rec.status === STATUS.AGUARDANDO_SEGURANCA ? `<button class="btn btn-ghost" disabled>Aguardando o técnico de segurança</button>` : ''}
+            ${rec.status === STATUS.CONCLUIDO ? `<button class="btn btn-dark" onclick="dpImprimirDossie('${rec.id}')">${ICO.imprimir}Imprimir dossiê</button>` : ''}
             ${rec.status !== STATUS.CONCLUIDO ? `<button class="btn btn-ghost spacer" onclick="dpDevolverRH('${rec.id}')">${ICO.devolver}Devolver ao RH</button>` : ''}
           </div>
 
@@ -1917,6 +1959,156 @@
     await carregarRegistrosDoPapel();
     toast('Ficha devolvida ao RH.');
     renderDP('lista');
+  };
+
+  // Dossiê da admissão concluída: tudo que as três mesas
+  // preencheram, mais os anexos, numa folha só para arquivo físico.
+  function linhaPR(rotulo, valor) {
+    return `<div class="pr-row"><div class="pl">${esc(rotulo)}</div><div class="pv">${esc(valor) || '—'}</div></div>`;
+  }
+
+  window.dpImprimirDossie = async function(recId) {
+    const rec = getRecord(recId);
+    if (!rec) return;
+
+    // Os anexos podem não estar carregados se o usuário veio direto
+    // da lista; garante antes de montar a folha.
+    if (staffRecId !== recId || !Object.keys(staffDocs).length) {
+      const r = await chamarRPC('rpc_dp_documentos', { p_id: recId });
+      staffDocs = normalizarDocs(r.ok ? r.data : null);
+      staffRecId = recId;
+    }
+
+    const rh = rec.rh || {}, dp = rec.dp || {}, seg = rec.seguranca || {};
+
+    const anexos = DOC_ITENS.map(it => {
+      const arquivos = staffDocs[it.key] || [];
+      if (!arquivos.length) return '';
+      return `<div class="pr-doc">
+        <div class="pr-doc-t">${esc(it.label)}</div>
+        ${arquivos.map(d => /^image\//.test(d.tipo || '')
+          ? `<img src="${esc(d.base64)}" alt="${esc(d.nome || '')}" />
+             <div class="pr-file">${esc(d.nome || '')} · ${esc(fmtTamanho(d.tamanho))}</div>`
+          : `<div class="pr-file">${esc(d.nome || 'arquivo')} · ${esc(fmtTamanho(d.tamanho))} · PDF, imprima o arquivo separadamente</div>`
+        ).join('')}
+      </div>`;
+    }).join('');
+
+    const semAnexo = DOC_ITENS.filter(it => !(staffDocs[it.key] || []).length).map(it => it.label);
+
+    document.getElementById('printArea').innerHTML = `
+      <div class="pr-head">
+        <div>
+          <h1>Ficha de admissão</h1>
+          <div class="pr-sub">${esc(rh.nome || 'Sem nome')} — Aluminas Móveis Ltda</div>
+        </div>
+        <div class="pr-meta">
+          ${esc(rec.id)}<br />
+          Admissão ${esc(fmtDate(dp.admissao))}<br />
+          Impresso em ${esc(nowLabel())}
+        </div>
+      </div>
+
+      <div class="pr-sec">
+        <h2>Dados pessoais</h2>
+        <div class="pr-grid">
+          ${linhaPR('Nome completo', rh.nome)}
+          ${linhaPR('CPF', rh.cpf)}
+          ${linhaPR('RG', rh.rg)}
+          ${linhaPR('Nascimento', fmtDate(rh.nascimento))}
+          ${linhaPR('Telefone', rh.telefone)}
+          ${linhaPR('E-mail', rh.email)}
+          ${linhaPR('Estado civil', rh.estadoCivil)}
+          ${linhaPR('Escolaridade', rh.escolaridade)}
+          ${linhaPR('Cor/raça (autodeclarada)', rh.corRaca)}
+          ${linhaPR('Dependentes', rh.dependentes)}
+          ${linhaPR('Nº de dependentes', rh.numDependentes)}
+          ${linhaPR('Menor de idade', rh.menoridade)}
+        </div>
+      </div>
+
+      <div class="pr-sec">
+        <h2>Dados contratuais</h2>
+        <div class="pr-grid">
+          ${linhaPR('Empresa', dp.empresa)}
+          ${linhaPR('Cargo', dp.cargo)}
+          ${linhaPR('Departamento', dp.departamento)}
+          ${linhaPR('Tipo de contrato', dp.tipoContrato)}
+          ${linhaPR('Salário', dp.salario)}
+          ${linhaPR('Data de admissão', fmtDate(dp.admissao))}
+        </div>
+        ${dp.salarioObs ? linhaPR('Observação sobre salário', dp.salarioObs) : ''}
+      </div>
+
+      <div class="pr-sec">
+        <h2>Dados bancários</h2>
+        <div class="pr-grid">
+          ${linhaPR('PIS/PASEP', dp.pis)}
+          ${linhaPR('Banco', dp.banco)}
+          ${linhaPR('Tipo de conta', dp.tipoConta)}
+          ${linhaPR('Agência', dp.agencia)}
+          ${linhaPR('Conta', dp.conta)}
+          ${linhaPR('Chave Pix', dp.chavePix ? (dp.tipoPix ? dp.tipoPix + ': ' : '') + dp.chavePix : '')}
+        </div>
+      </div>
+
+      <div class="pr-sec">
+        <h2>Exame ocupacional</h2>
+        <div class="pr-grid">
+          ${linhaPR('Tipo de exame', seg.tipoExame)}
+          ${linhaPR('Data do exame', fmtDate(seg.dataExame))}
+          ${linhaPR('Clínica / Médico', seg.clinicaMedico)}
+          ${linhaPR('Resultado', seg.resultado)}
+        </div>
+        ${linhaPR('Restrições', seg.restricoes)}
+        ${seg.observacoes ? linhaPR('Observações', seg.observacoes) : ''}
+      </div>
+
+      <div class="pr-sec">
+        <h2>Conferência de documentos</h2>
+        <div class="pr-grid">
+          ${DOC_ITENS.map((it, i) => linhaPR(it.label, dp['doc' + (i + 1)] ? 'Conferido' : 'Pendente')).join('')}
+        </div>
+      </div>
+
+      <div class="pr-sec">
+        <h2>Tramitação</h2>
+        ${(rec.historico || []).map(h =>
+          `<div class="pr-row"><div class="pl">${esc(h.quando)}</div><div class="pv">${esc(h.de)} para ${esc(h.para)} · ${esc(h.por)}${h.motivo ? ' · ' + esc(h.motivo) : ''}</div></div>`
+        ).join('') || '<div class="pr-row"><div class="pv">Sem registros.</div></div>'}
+      </div>
+
+      <div class="pr-assina">
+        <div>Assinatura do funcionário</div>
+        <div>Responsável pelo DP</div>
+      </div>
+
+      ${anexos ? `<div class="pr-quebra"></div>
+        <div class="pr-sec"><h2>Documentos anexados</h2></div>
+        ${anexos}
+        ${semAnexo.length ? `<div class="pr-file">Sem anexo: ${esc(semAnexo.join(', '))}.</div>` : ''}` : ''}
+
+      <div class="pr-rodape">
+        Documento gerado pelo Sistema de Admissão da Aluminas Móveis. Contém dados pessoais
+        e dados sensíveis de saúde e origem racial — guarde em local de acesso restrito e
+        descarte por fragmentação. Protocolo ${esc(rec.id)}.
+      </div>`;
+
+    // Espera as imagens decodificarem, senão saem em branco na folha.
+    // Com teto de 4s: uma imagem corrompida que nunca dispara onload
+    // não pode impedir a impressão do resto do dossiê.
+    const imgs = [...document.querySelectorAll('#printArea img')];
+    const pendentes = imgs.filter(i => !i.complete).map(i => new Promise(ok => {
+      i.onload = ok; i.onerror = ok;
+    }));
+    if (pendentes.length) {
+      await Promise.race([
+        Promise.all(pendentes),
+        new Promise(ok => setTimeout(ok, 4000))
+      ]);
+    }
+
+    window.print();
   };
 
   window.dpFinalize = async function(recId) {
