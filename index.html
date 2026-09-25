@@ -417,6 +417,13 @@
   .history-item .hi-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--bordo-edge); flex-shrink: 0; font-size: 0; color: transparent; }
   .history-item b { color: var(--ink); font-weight: 600; }
 
+  .subsec { font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-soft); margin: 18px 0 11px; padding-top: 14px; border-top: 1px solid var(--rule-soft); }
+  .cep-status { font-size: 11.5px; color: var(--ink-faint); margin-top: 4px; }
+  .cep-status:empty { display: none; }
+  .tel-wa { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+  .wa-link { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border: 1px solid var(--rule); border-radius: 999px; background: var(--surface); color: var(--ok); font-size: 12px; font-weight: 500; text-decoration: none; line-height: 1.4; }
+  .wa-link:hover { border-color: var(--ok); background: var(--ok-bg); }
+  .wa-link .icon { width: 14px; height: 14px; }
   .readonly-row { display: flex; gap: 16px; border-bottom: 1px solid var(--rule-soft); padding: 9px 0; font-size: 13.5px; }
   .readonly-row:last-child { border-bottom: none; }
   .readonly-row .rl { width: 210px; flex-shrink: 0; color: var(--ink-soft); }
@@ -620,6 +627,7 @@
       alerta:   w('<path d="M12 4l9 16H3z"/><path d="M12 10v4"/><path d="M12 17.5v.5"/>'),
       info:     w('<circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8v.5"/>'),
       anexo:    w('<path d="M20 11l-8.5 8.5a4.5 4.5 0 0 1-6.4-6.4L13 4.8a3 3 0 0 1 4.2 4.2l-8 8a1.5 1.5 0 0 1-2.1-2.1L15 7"/>'),
+      whats:    w('<path d="M5 4h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-8l-5 4v-4H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><path d="M9.2 7.6c-.3 2.6 2.6 5.5 5.2 5.2l.9-1.3-1.7-.9-.8.7c-.8-.4-1.4-1-1.8-1.8l.7-.8-.9-1.7z"/>'),
       imprimir: w('<path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M6 15h12v6H6z"/>')
     };
   })();
@@ -971,6 +979,113 @@
   // ============================================================
   // RH — cria dados pessoais e envia para DP
   // ============================================================
+  // ============================================================
+  // ENDEREÇO — o mesmo bloco no RH e no portal do funcionário.
+  // Fica dentro do bloco rh da ficha (chaves planas: cep, logradouro...).
+  // ============================================================
+  const CAMPOS_ENDERECO = ['cep','logradouro','numero','complemento','bairro','cidade','uf'];
+  const UFS = ['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'];
+
+  function enderecoHTML(pre, bloqueado) {
+    const dis = bloqueado ? 'disabled' : '';
+    return `
+      <div class="subsec">Endereço</div>
+      <div class="grid cols3">
+        <div class="field"><label for="${pre}cep">CEP</label>
+          <input id="${pre}cep" type="text" inputmode="numeric" maxlength="9" placeholder="00000-000" ${dis} />
+          <div class="cep-status" id="${pre}cepStatus"></div></div>
+        <div class="field span2"><label for="${pre}logradouro">Rua / Avenida</label>
+          <input id="${pre}logradouro" type="text" placeholder="Ex: Rua das Flores" ${dis} /></div>
+        <div class="field"><label for="${pre}numero">Número</label>
+          <input id="${pre}numero" type="text" placeholder="Ex: 120 ou S/N" ${dis} /></div>
+        <div class="field"><label for="${pre}complemento">Complemento</label>
+          <input id="${pre}complemento" type="text" placeholder="Apto, bloco, fundos..." ${dis} /></div>
+        <div class="field"><label for="${pre}bairro">Bairro</label>
+          <input id="${pre}bairro" type="text" placeholder="Bairro" ${dis} /></div>
+        <div class="field span2"><label for="${pre}cidade">Cidade</label>
+          <input id="${pre}cidade" type="text" placeholder="Ex: Cláudio" ${dis} /></div>
+        <div class="field"><label for="${pre}uf">UF</label>
+          <select id="${pre}uf" ${dis}><option value="">Selecione</option>${UFS.map(u => `<option>${u}</option>`).join('')}</select></div>
+      </div>`;
+  }
+
+  function preencherEndereco(pre, dados) {
+    const d = dados || {};
+    CAMPOS_ENDERECO.forEach(k => {
+      const el = document.getElementById(pre + k);
+      if (el) el.value = (k === 'cep') ? fmtCEP(d[k] || '') : (d[k] || '');
+    });
+  }
+
+  function coletarEndereco(pre) {
+    const out = {};
+    CAMPOS_ENDERECO.forEach(k => { out[k] = val(pre + k); });
+    if (out.uf) out.uf = out.uf.toUpperCase();
+    return out;
+  }
+
+  function fmtCEP(v) {
+    const d = soDigitos(v).slice(0, 8);
+    return d.length > 5 ? d.slice(0, 5) + '-' + d.slice(5) : d;
+  }
+
+  // Texto de uma linha, para leitura no DP e no dossiê.
+  function enderecoTexto(d) {
+    d = d || {};
+    const rua = [d.logradouro, d.numero].filter(Boolean).join(', ');
+    const cidadeUf = [d.cidade, d.uf].filter(Boolean).join('/');
+    const partes = [rua, d.complemento, d.bairro, cidadeUf, d.cep ? 'CEP ' + fmtCEP(d.cep) : ''].filter(Boolean);
+    return partes.join(' · ');
+  }
+
+  // Máscara no CEP e busca no ViaCEP ao completar 8 dígitos.
+  // Se a busca falhar, nada acontece: a pessoa digita à mão.
+  function ligarBuscaCep(pre) {
+    const cep = document.getElementById(pre + 'cep');
+    if (!cep || cep.disabled) return;
+    const status = document.getElementById(pre + 'cepStatus');
+    let ultimo = soDigitos(cep.value);
+    cep.addEventListener('input', async () => {
+      cep.value = fmtCEP(cep.value);
+      const d = soDigitos(cep.value);
+      if (d.length !== 8 || d === ultimo) return;
+      ultimo = d;
+      if (status) status.textContent = 'Buscando endereço...';
+      try {
+        const resp = await fetch('https://viacep.com.br/ws/' + d + '/json/');
+        const j = await resp.json();
+        if (soDigitos(cep.value) !== d) return; // CEP mudou durante a busca
+        if (!j || j.erro) { if (status) status.textContent = 'CEP não encontrado. Preencha à mão.'; return; }
+        const pares = { logradouro: j.logradouro, bairro: j.bairro, cidade: j.localidade, uf: j.uf };
+        Object.keys(pares).forEach(k => {
+          const el = document.getElementById(pre + k);
+          if (el && pares[k]) el.value = pares[k];
+        });
+        if (status) status.textContent = '';
+        const num = document.getElementById(pre + 'numero');
+        if (num && !num.value) num.focus();
+      } catch (e) {
+        if (status) status.textContent = 'Sem busca automática agora. Preencha à mão.';
+      }
+    });
+  }
+
+  // Telefone formatado + atalho para abrir a conversa no WhatsApp.
+  function fmtTelefone(v) {
+    const d = soDigitos(v);
+    if (d.length === 11) return '(' + d.slice(0,2) + ') ' + d.slice(2,7) + '-' + d.slice(7);
+    if (d.length === 10) return '(' + d.slice(0,2) + ') ' + d.slice(2,6) + '-' + d.slice(6);
+    return v || '';
+  }
+  function telefoneComWhatsHTML(tel, nome, deQuem, compacto) {
+    if (soDigitos(tel).length < 10) return compacto ? '' : '<span>Não informado</span>';
+    const primeiro = String(nome || '').trim().split(/\s+/)[0] || '';
+    const texto = (primeiro ? 'Olá, ' + primeiro + '! ' : 'Olá! ') + 'Aqui é ' + deQuem + ' da Aluminas Móveis.';
+    const link = `<a class="wa-link" href="${esc(linkWhatsApp(tel, texto))}" target="_blank" rel="noopener"
+        title="Abrir conversa no WhatsApp" onclick="event.stopPropagation()">${ICO.whats}${compacto ? esc(fmtTelefone(tel)) : 'WhatsApp'}</a>`;
+    return compacto ? link : `<span class="tel-wa"><span>${esc(fmtTelefone(tel))}</span>${link}</span>`;
+  }
+
   function renderRH(view, recId) {
     view = view || 'lista';
     const el = document.getElementById('screenRH');
@@ -1074,6 +1189,7 @@
               </select>
             </div>
           </div>
+          ${enderecoHTML('f-', locked)}
         </div>
 
         <div class="card">
@@ -1176,6 +1292,7 @@
         document.getElementById('f-dependentes').value = rec.rh.dependentes || '';
         document.getElementById('f-numDependentes').value = (rec.rh.numDependentes ?? '');
         document.getElementById('f-menoridade').value = rec.rh.menoridade || '';
+        preencherEndereco('f-', rec.rh);
         document.getElementById('f-preenchidoPor').value = rec.rh.preenchidoPor || currentUser.nome;
         document.getElementById('f-dataPreenchimento').value = rec.rh.dataPreenchimento || todayISO();
         carregarDpNoRH(rec.id);
@@ -1188,6 +1305,7 @@
         dpSnapshotRH = {};
         dpCarregadoNoRH = true;
       }
+      ligarBuscaCep('f-');
       return;
     }
 
@@ -1234,6 +1352,7 @@
       dependentes: val('f-dependentes'), numDependentes: val('f-numDependentes'), menoridade: val('f-menoridade'),
       preenchidoPor: val('f-preenchidoPor'), dataPreenchimento: val('f-dataPreenchimento') || todayISO()
     };
+    Object.assign(dados, coletarEndereco('f-'));
     const antes = (recAtual && recAtual.rh) || {};
     if (antes.atualizadoPeloFuncionario) dados.atualizadoPeloFuncionario = true;
     if (antes.atualizadoEm) dados.atualizadoEm = antes.atualizadoEm;
@@ -1610,6 +1729,7 @@
           <div class="readonly-row"><div class="rl">Cor/raça (autodeclarada)</div><div class="rv">${esc(rec.rh.corRaca) || '—'}</div></div>
           <div class="readonly-row"><div class="rl">Dependentes</div><div class="rv">${esc(rec.rh.dependentes)}${rec.rh.dependentes==='Sim' ? ' ('+(rec.rh.numDependentes||'0')+')' : ''}</div></div>
           <div class="readonly-row"><div class="rl">Menor de idade?</div><div class="rv">${esc(rec.rh.menoridade)}</div></div>
+          <div class="readonly-row"><div class="rl">Endereço</div><div class="rv">${esc(enderecoTexto(rec.rh)) || '—'}</div></div>
         </div>
 
         <div class="card ${dpLocked ? 'locked' : ''}">
@@ -2024,6 +2144,7 @@
           ${linhaPR('Dependentes', rh.dependentes)}
           ${linhaPR('Nº de dependentes', rh.numDependentes)}
           ${linhaPR('Menor de idade', rh.menoridade)}
+          ${linhaPR('Endereço', enderecoTexto(rh))}
         </div>
       </div>
 
@@ -2145,6 +2266,7 @@
           <div class="readonly-row"><div class="rl">CPF</div><div class="rv">${esc(rec.rh_basico.cpf)}</div></div>
           <div class="readonly-row"><div class="rl">RG</div><div class="rv">${esc(rec.rh_basico.rg)}</div></div>
           <div class="readonly-row"><div class="rl">Data de nascimento</div><div class="rv">${fmtDate(rec.rh_basico.nascimento)}</div></div>
+          <div class="readonly-row"><div class="rl">Telefone</div><div class="rv">${telefoneComWhatsHTML(rec.rh_basico.telefone || rec.rh.telefone, rec.rh_basico.nome, 'a Segurança do Trabalho')}</div></div>
           <div class="readonly-row"><div class="rl">Empresa</div><div class="rv">${esc(rec.dp_basico.empresa)}</div></div>
           <div class="readonly-row"><div class="rl">Departamento</div><div class="rv">${esc(rec.dp_basico.departamento)}</div></div>
           <div class="readonly-row"><div class="rl">Cargo</div><div class="rv">${esc(rec.dp_basico.cargo)}</div></div>
@@ -2231,6 +2353,7 @@
           <div class="rec-item-meta">${r.id} · ${esc(r.dp_basico.cargo || '')}</div>
         </div>
         <div class="rec-item-right">
+          ${telefoneComWhatsHTML(r.rh_basico.telefone || r.rh.telefone, r.rh_basico.nome, 'a Segurança do Trabalho', true)}
           <span class="status-pill status-${r.status}">${STATUS_LABEL[r.status]}</span>
         </div>
       </div>
@@ -2550,6 +2673,7 @@
             </select>
           </div>
         </div>
+        ${enderecoHTML('p-', !editavel)}
       </div>
 
       <div class="card">
@@ -2602,6 +2726,8 @@
     document.getElementById('p-dependentes').value = rh.dependentes || '';
     document.getElementById('p-numDependentes').value = (rh.numDependentes ?? '');
     document.getElementById('p-menoridade').value = rh.menoridade || '';
+    preencherEndereco('p-', rh);
+    ligarBuscaCep('p-');
 
     const banc = portalData.bancarios || {};
     document.getElementById('p-pis').value = banc.pis || '';
@@ -2731,7 +2857,8 @@
     const faltando = [];
     [['p-nome','Nome completo'],['p-rg','RG'],['p-nascimento','Data de nascimento'],
      ['p-telefone','Telefone'],['p-estadoCivil','Estado civil'],['p-dependentes','Há dependentes?'],
-     ['p-menoridade','Menor de idade?'],['p-pis','PIS/PASEP'],['p-banco','Banco'],
+     ['p-menoridade','Menor de idade?'],['p-cep','CEP'],['p-logradouro','Rua / Avenida'],
+     ['p-numero','Número da casa'],['p-bairro','Bairro'],['p-cidade','Cidade'],['p-uf','UF'],['p-pis','PIS/PASEP'],['p-banco','Banco'],
      ['p-agencia','Agência'],['p-conta','Conta']
     ].forEach(([id, rotulo]) => { if (!val(id)) faltando.push(rotulo); });
     DOC_ITENS.forEach(it => { if (!(portalDocs[it.key] || []).length) faltando.push('Documento: ' + it.label); });
@@ -2758,6 +2885,7 @@
       escolaridade: val('p-escolaridade'), corRaca: val('p-corRaca'),
       dependentes: val('p-dependentes'), numDependentes: val('p-numDependentes'), menoridade: val('p-menoridade')
     };
+    Object.assign(rhData, coletarEndereco('p-'));
     const bancData = {
       pis: val('p-pis'), banco: val('p-banco'), tipoConta: val('p-tipoConta'),
       agencia: val('p-agencia'), conta: val('p-conta'), temPix: val('p-temPix'),
