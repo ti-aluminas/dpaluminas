@@ -632,8 +632,7 @@
     };
   })();
 
-  // Data local (America/Sao_Paulo), nao UTC: depois das 21h o toISOString()
-  // ja virava o dia seguinte e gravava a data errada.
+  // Mostra 'AAAA-MM-DD' como 'DD/MM/AAAA' sem passar por Date (evita fuso).
   function fmtDate(d) {
     if (!d) return '—';
     const iso = String(d).slice(0, 10);
@@ -716,7 +715,10 @@
 
   async function chamarRPC(nome, params, opts) {
     const escrita = !SO_LEITURA.test(nome);
-    const chave = escrita ? nome + ':' + JSON.stringify(params || {}) : null;
+    // Chave pelo alvo (ficha/token), nao pelo payload inteiro: o payload
+    // do portal pode ter megas de anexo e o stringify travava a tela.
+    const alvo = params && (params.p_id || params.p_token || params.p_user_id);
+    const chave = escrita ? nome + ':' + (alvo || JSON.stringify(params || {})) : null;
 
     if (chave) {
       if (escritasEmVoo.has(chave)) return { ok: false, data: null, duplicada: true };
@@ -729,7 +731,7 @@
       if (error) {
         console.error(nome, error);
         if (!(opts && opts.silent)) toastErro('Erro: ' + error.message);
-        return { ok: false, data: null };
+        return { ok: false, data: null, erro: error.message };
       }
       return { ok: true, data };
     } catch (e) {
@@ -1354,7 +1356,9 @@
     };
     Object.assign(dados, coletarEndereco('f-'));
     const antes = (recAtual && recAtual.rh) || {};
-    if (antes.atualizadoPeloFuncionario) dados.atualizadoPeloFuncionario = true;
+    // Vai de volta exatamente como veio: o banco compara com o valor atual
+    // e recusa o salvamento se o funcionario mexeu pelo portal nesse meio tempo.
+    if (antes.atualizadoPeloFuncionario) dados.atualizadoPeloFuncionario = antes.atualizadoPeloFuncionario;
     if (antes.atualizadoEm) dados.atualizadoEm = antes.atualizadoEm;
     return dados;
   }
@@ -1556,7 +1560,7 @@
     const mensagem =
       (primeiroNome ? 'Olá, ' + primeiroNome + '! ' : 'Olá! ') +
       'Aqui é o RH da Aluminas Móveis. Para seguir com sua admissão, confirme seus dados e anexe seus documentos neste link:\n\n' + url +
-      '\n\nPara abrir, informe seu CPF' + (cpf ? ' (' + cpf + ')' : '') + '. Não precisa de senha.';
+      '\n\nPara abrir, informe o seu CPF. Não precisa de senha.';
 
     const overlay = document.createElement('div');
     overlay.className = 'modal-overlay';
@@ -1574,7 +1578,7 @@
         </div>
 
         <div class="link-notas">
-          <div>Para entrar, o funcionário digita o CPF${cpf ? ' ' + esc(cpf) : ' cadastrado nesta ficha'}. Não há senha.</div>
+          <div>Para entrar, o funcionário digita o próprio CPF${cpf ? ' (' + esc(cpf) + ')' : ' cadastrado nesta ficha'}. O CPF não vai na mensagem: quem receber o link encaminhado não consegue abrir.</div>
           <div>O link para de funcionar quando a ficha sai do RH.</div>
           ${soDigitos(rh.telefone).length >= 10 ? '' : '<div class="aviso">Sem telefone na ficha: o WhatsApp abre sem destinatário.</div>'}
         </div>
@@ -2417,7 +2421,16 @@
     { key: 'casamento',    label: 'Certidão de casamento' },
   ];
   const MAX_POR_ITEM = 3;
-  const LIMITE_TOTAL_BYTES = 20 * 1024 * 1024;
+  // Medido no texto base64, que é o que o banco conta (limite de 15 MB lá;
+  // aqui 14 MB para sobrar folga para nomes e estrutura do JSON).
+  const LIMITE_TOTAL_BYTES = 14 * 1024 * 1024;
+  function tamanhoGravado(docs) {
+    let total = 0;
+    Object.values(docs || {}).forEach(arr => (arr || []).forEach(d => {
+      total += d && d.base64 ? d.base64.length : 0;
+    }));
+    return total;
+  }
   const MAX_LADO = 1600;       // lado maior da imagem depois de reduzida
   const QUALIDADE = 0.75;      // qualidade JPEG; abaixo disso o texto sofre
 
@@ -2549,10 +2562,10 @@
 
     const btn = document.getElementById('portalBtnEntrar');
     btn.disabled = true; btn.textContent = 'Verificando...';
-    const r = await chamarRPC('rpc_portal_abrir', { p_token: portalToken, p_cpf: cpf });
+    const r = await chamarRPC('rpc_portal_abrir', { p_token: portalToken, p_cpf: cpf }, { silent: true });
     btn.disabled = false; btn.textContent = 'Acessar minha ficha';
     if (!r.ok) {
-      err.textContent = 'Não foi possível acessar. Verifique o CPF ou o link recebido.';
+      err.textContent = r.erro || 'Não foi possível acessar. Verifique a internet e tente de novo.';
       err.classList.add('show');
       return;
     }
@@ -2844,13 +2857,7 @@
 
   // Soma o tamanho REAL dos arquivos. Antes somava o comprimento da string
   // base64 (~37% maior), entao o "limite de 5 MB" na pratica cortava em ~3,6 MB.
-  function tamanhoTotalDocs() {
-    let total = 0;
-    Object.values(portalDocs).forEach(arr => (arr || []).forEach(d => {
-      total += Number(d.tamanho) || (d.base64 ? Math.floor(d.base64.length * 0.75) : 0);
-    }));
-    return total;
-  }
+  function tamanhoTotalDocs() { return tamanhoGravado(portalDocs); }
 
   window.portalSalvar = async function() {
     // Nada é obrigatório para salvar, mas avisamos o que ainda falta.
@@ -3026,10 +3033,7 @@
 
   window.staffSalvarDocs = async function() {
     if (!staffRecId) return;
-    let total = 0;
-    Object.values(staffDocs).forEach(arr => (arr || []).forEach(d => {
-      total += Number(d.tamanho) || (d.base64 ? Math.floor(d.base64.length * 0.75) : 0);
-    }));
+    const total = tamanhoGravado(staffDocs);
     if (total > LIMITE_TOTAL_BYTES) {
       toast('Os anexos passam de ' + fmtMB(LIMITE_TOTAL_BYTES) + ' no total. Remova algum arquivo.');
       return;
@@ -3066,7 +3070,7 @@
         <div class="section-num"><div class="n">${ICO.historico}</div><h2>Histórico de encaminhamentos</h2></div>
         <div class="history-list">
           ${hist.slice().reverse().map(h => `
-            <div class="history-item"><span class="hi-dot"></span><span>${esc(h.quando)} · <b>${esc(h.de)} para ${esc(h.para)}</b> · por ${esc(h.por)}</span></div>
+            <div class="history-item"><span class="hi-dot"></span><span>${esc(h.quando)} · <b>${esc(STATUS_LABEL[h.de] || h.de)} para ${esc(STATUS_LABEL[h.para] || h.para)}</b> · por ${esc(h.por)}${h.motivo ? ' · motivo: ' + esc(h.motivo) : ''}</span></div>
           `).join('')}
         </div>
       </div>
